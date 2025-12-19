@@ -1,0 +1,97 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import axiosInstance from "@/lib/axios";
+import Toast from "@/app/components/ui/Toast";
+import AdminHomeLoading from "@/app/components/admin/AdminHomeLoading";
+import AdminHomeHeader from "@/app/components/admin/AdminHomeHeader";
+import QuickAccessCards from "@/app/components/admin/QuickAccessCards";
+import AdminStatsCards from "@/app/components/admin/AdminStatsCards";
+import OrderStatusSummary from "@/app/components/admin/OrderStatusSummary";
+import RecentOrdersTable from "@/app/components/admin/RecentOrdersTable";
+
+export default function AdminHomePage() {
+ const router = useRouter();
+ const [authLoading, setAuthLoading] = useState(true);
+ const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+ const [dashboardLoading, setDashboardLoading] = useState(true);
+ const [stats, setStats] = useState(null);
+ const [recentOrders, setRecentOrders] = useState([]);
+
+ useEffect(() => {
+  (async () => {
+   try {
+    const res = await axiosInstance.get("/api/auth/check");
+    const data = res.data;
+    if (!data?.authenticated) {
+     router.push("/admin-giris");
+     return;
+    }
+
+    // Dashboard verileri
+    setDashboardLoading(true);
+    try {
+     const [statsRes, ordersRes] = await Promise.all([
+      axiosInstance.get("/api/admin/stats"),
+      axiosInstance.get("/api/admin/orders"),
+     ]);
+
+     if (statsRes.data?.success) {
+      setStats(statsRes.data.stats || null);
+     } else {
+      setStats(null);
+     }
+
+     if (ordersRes.data?.success) {
+      setRecentOrders((ordersRes.data.orders || []).slice(0, 5));
+     } else {
+      setRecentOrders([]);
+     }
+    } catch (e) {
+     setStats(null);
+     setRecentOrders([]);
+    } finally {
+     setDashboardLoading(false);
+    }
+   } catch {
+    router.push("/admin-giris");
+    return;
+   } finally {
+    setAuthLoading(false);
+   }
+  })();
+ }, [router]);
+
+ const handleLogout = async () => {
+  try {
+   await axiosInstance.post("/api/auth/logout");
+   router.push("/admin-giris");
+  } catch {
+   setToast({ show: true, message: "Çıkış yapılamadı", type: "error" });
+  }
+ };
+
+ if (authLoading) {
+  return <AdminHomeLoading />;
+ }
+
+ return (
+  <div className="min-h-screen bg-gray-50 px-4 py-10">
+   <div className="w-full max-w-5xl mx-auto">
+    <Toast toast={toast} setToast={setToast} />
+
+    <div className="bg-white rounded-2xl shadow-xl overflow-hidden border">
+     <AdminHomeHeader onLogout={handleLogout} />
+
+     <div className="p-6 space-y-6">
+      <QuickAccessCards />
+      <AdminStatsCards stats={stats} loading={dashboardLoading} />
+      <OrderStatusSummary stats={stats} loading={dashboardLoading} />
+      <RecentOrdersTable recentOrders={recentOrders} loading={dashboardLoading} />
+     </div>
+    </div>
+   </div>
+  </div>
+ );
+}

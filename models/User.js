@@ -1,0 +1,143 @@
+import mongoose from 'mongoose';
+
+const AddressSchema = new mongoose.Schema({
+ title: {
+  type: String,
+  required: true,
+ },
+ fullName: {
+  type: String,
+  required: true,
+ },
+ phone: {
+  type: String,
+  required: true,
+ },
+ address: {
+  type: String,
+  required: true,
+ },
+ city: {
+  type: String,
+  required: true,
+ },
+ district: {
+  type: String,
+  required: true,
+ },
+ isDefault: {
+  type: Boolean,
+  default: false,
+ },
+}, { _id: true });
+
+const CardSchema = new mongoose.Schema({
+ cardName: {
+  type: String,
+  required: true,
+ },
+ cardNumber: {
+  type: String,
+  required: true,
+ },
+ cardHolderName: {
+  type: String,
+  required: true,
+ },
+ expiryDate: {
+  type: String,
+  required: true,
+ },
+ cvv: {
+  type: String,
+  required: true,
+ },
+ isDefault: {
+  type: Boolean,
+  default: false,
+ },
+}, { _id: true });
+
+const UserSchema = new mongoose.Schema({
+ name: {
+  type: String,
+  required: [true, 'Ad Soyad gereklidir'],
+  trim: true,
+ },
+ email: {
+  type: String,
+  required: [true, 'Email gereklidir'],
+  unique: true,
+  lowercase: true,
+  trim: true,
+ },
+ password: {
+  type: String,
+  required: [true, 'Şifre gereklidir'],
+ },
+ phone: {
+  type: String,
+  default: '',
+ },
+ profileImage: {
+  type: String,
+  default: '',
+ },
+ addresses: [AddressSchema],
+ cards: [CardSchema],
+ orders: [{
+  orderId: String,
+  date: Date,
+  status: String,
+  deliveredAt: Date,
+  total: Number,
+  items: Array,
+  payment: mongoose.Schema.Types.Mixed,
+  addressId: String,
+  addressSummary: String,
+  shippingAddress: mongoose.Schema.Types.Mixed,
+  billingAddress: mongoose.Schema.Types.Mixed,
+  returnRequest: {
+   status: { type: String, default: "" }, // Talep Edildi / Onaylandı / Reddedildi vb.
+   requestedAt: Date,
+   approvedAt: Date,
+   completedAt: Date,
+   cancelledAt: Date,
+   cancelReason: { type: String, default: "" },
+   note: { type: String, default: "" },
+  },
+  createdAt: {
+   type: Date,
+   default: Date.now,
+  },
+  updatedAt: Date,
+ }],
+ favorites: [{
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Product',
+ }],
+ notificationPreferences: {
+  emailNotifications: {
+   type: Boolean,
+   default: true,
+  },
+  campaignNotifications: {
+   type: Boolean,
+   default: false,
+  },
+ },
+ resetPasswordToken: String,
+ resetPasswordExpires: Date,
+ emailVerificationCode: String,
+ emailVerificationCodeExpires: Date,
+ isEmailVerified: {
+  type: Boolean,
+  default: false,
+ },
+ createdAt: {
+  type: Date,
+  default: Date.now,
+ },
+});
+
+export default mongoose.models.User || mongoose.model('User', UserSchema);
