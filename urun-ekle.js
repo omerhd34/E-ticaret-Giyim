@@ -52,7 +52,6 @@ const COLOR_HEX_MAP = {
 const inferHexCode = (name) => {
  const raw = String(name || "").trim();
  if (!raw) return "";
- // Direkt hex girildiyse (#fff / #ffffff)
  if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(raw)) return raw;
  const key = normalizeColorName(raw);
  return COLOR_HEX_MAP[key] || "";
@@ -77,7 +76,6 @@ const normalizeColors = (colors) => {
   .filter(Boolean);
 };
 
-// Tek ürün ekleme fonksiyonu
 async function addProduct(product) {
  try {
   const payload = {
@@ -106,7 +104,6 @@ async function addProduct(product) {
  }
 }
 
-// Çoklu ürün ekleme fonksiyonu
 async function addMultipleProducts(productsArray) {
  const results = [];
  let successCount = 0;
@@ -116,7 +113,6 @@ async function addMultipleProducts(productsArray) {
  for (let i = 0; i < productsArray.length; i++) {
   const product = productsArray[i];
 
-  // Boş ürünleri atla
   if (!product.name || !product.description) {
    continue;
   }
@@ -131,7 +127,6 @@ async function addMultipleProducts(productsArray) {
    errorCount++;
   }
 
-  // API'ye çok hızlı istek göndermemek için kısa bir bekleme
   if (i < productsArray.length - 1) {
    await new Promise(resolve => setTimeout(resolve, 500));
   }

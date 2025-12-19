@@ -269,7 +269,7 @@ export default function UserOrderDetailModal({ show, order, addresses, onClose, 
           {normalizeText(order?.returnRequest?.status) === normalizeText("Talep Edildi.") ? (
            <span className="text-gray-500"> — Geri dönüşümüzü bekleyin.</span>
           ) : null}
-         </span>
+         </span> 
          {canCancelReturnRequest && onCancelReturn ? (
           <button
            onClick={() => onCancelReturn(order.orderId)}

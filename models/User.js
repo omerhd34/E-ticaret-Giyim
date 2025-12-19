@@ -98,7 +98,7 @@ const UserSchema = new mongoose.Schema({
   shippingAddress: mongoose.Schema.Types.Mixed,
   billingAddress: mongoose.Schema.Types.Mixed,
   returnRequest: {
-   status: { type: String, default: "" }, // Talep Edildi / Onaylandı / Reddedildi vb.
+   status: { type: String, default: "" },   // Talep Edildi / Onaylandı / Reddedildi vb.
    requestedAt: Date,
    approvedAt: Date,
    completedAt: Date,

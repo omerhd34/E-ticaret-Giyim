@@ -136,13 +136,11 @@ const Header = () => {
     }
    }
   }
-
   try {
    const res = await axiosInstance.get("/api/user/check", {
     cache: 'no-store',
    });
    const data = res.data;
-
    if (data.authenticated) {
     router.push("/hesabim");
    } else {
@@ -210,9 +208,8 @@ const Header = () => {
 
  return (
   <header className="w-full bg-white shadow-sm sticky top-0 z-50 font-sans">
-
-   <div className="bg-slate-900 text-white text-[11px] font-medium py-2.5 px-4 tracking-wide">
-    <div className="container mx-auto flex justify-between items-center">
+   <div className="bg-slate-900 text-white text-[11px] font-medium py-2.5 tracking-wide">
+    <div className="container mx-auto px-4 flex justify-between items-center">
      <p>🎉 500 TL ve üzeri siparişlerde kargo bedava!</p>
      <div className="hidden sm:flex items-center gap-5">
       <Link href="/destek" className="flex items-center gap-1.5 hover:text-slate-300 transition">
@@ -224,11 +221,9 @@ const Header = () => {
 
    <div className="container mx-auto px-4 py-5">
     <div className="flex justify-between items-center gap-6">
-
      <Link href="/" className="text-3xl font-black tracking-tighter text-slate-900" onClick={closeMenu}>
       SHOP<span className="text-indigo-600">.CO</span>
      </Link>
-
      <div className="hidden md:flex flex-1 max-w-xl relative search-container">
       <form
        className="w-full relative group"

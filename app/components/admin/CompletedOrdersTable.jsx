@@ -36,6 +36,7 @@ export default function CompletedOrdersTable({
   { key: `rr:${normalizeText("Talep Edildi")}`, label: "İade: Talep Edildi" },
   { key: `rr:${normalizeText("Onaylandı")}`, label: "İade: Onaylandı" },
   { key: `rr:${normalizeText("Reddedildi")}`, label: "İade: Reddedildi" },
+  { key: `rr:${normalizeText("İptal Edildi")}`, label: "İade: İptal Edildi" },
   { key: `rr:${normalizeText("Tamamlandı")}`, label: "İade: Tamamlandı" },
  ];
 

@@ -22,20 +22,24 @@ export default function AdminHomePage() {
  useEffect(() => {
   (async () => {
    try {
-    const res = await axiosInstance.get("/api/auth/check");
-    const data = res.data;
-    if (!data?.authenticated) {
+    const checkRes = await axiosInstance.get("/api/auth/check");
+    const checkData = checkRes.data;
+    if (!checkData?.authenticated) {
      router.push("/admin-giris");
      return;
     }
 
-    // Dashboard verileri
     setDashboardLoading(true);
     try {
      const [statsRes, ordersRes] = await Promise.all([
       axiosInstance.get("/api/admin/stats"),
       axiosInstance.get("/api/admin/orders"),
      ]);
+
+     if (statsRes.status === 401 || !statsRes.data?.success) {
+      router.push("/admin-giris");
+      return;
+     }
 
      if (statsRes.data?.success) {
       setStats(statsRes.data.stats || null);
@@ -49,6 +53,10 @@ export default function AdminHomePage() {
       setRecentOrders([]);
      }
     } catch (e) {
+     if (e.response?.status === 401) {
+      router.push("/admin-giris");
+      return;
+     }
      setStats(null);
      setRecentOrders([]);
     } finally {

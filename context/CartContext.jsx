@@ -25,7 +25,6 @@ export function CartProvider({ children }) {
   }
  });
 
- // MongoDB'den favorileri yükle ve geçersiz ürünleri temizle (eğer kullanıcı giriş yaptıysa)
  useEffect(() => {
   if (typeof window === "undefined") return;
 
@@ -171,16 +170,13 @@ export function CartProvider({ children }) {
   }
  };
 
- // Sepetteki ürünlerin fiyatlarını düzenli olarak güncelle
  useEffect(() => {
   if (typeof window === "undefined" || cart.length === 0) return;
 
-  // İlk yüklemede güncelle (setTimeout ile async işlemi başlat)
   const timeoutId = setTimeout(() => {
    updateCartPrices();
-  }, 1000); // 1 saniye bekle (sayfa yüklenmesini bekle)
+  }, 1000);
 
-  // Sayfa görünür olduğunda veya odaklandığında yeniden kontrol et
   const handleVisibilityChange = () => {
    if (!document.hidden) {
     updateCartPrices();
@@ -191,7 +187,6 @@ export function CartProvider({ children }) {
    updateCartPrices();
   };
 
-  // Custom event dinle (sepet sayfası güncellediğinde)
   const handleCartUpdate = () => {
    updateCartPrices();
   };
@@ -288,7 +283,6 @@ export function CartProvider({ children }) {
    return;
   }
 
-  // Maksimum 10 adet kontrolü
   if (newQuantity > 10) {
    newQuantity = 10;
   }
@@ -363,7 +357,6 @@ export function CartProvider({ children }) {
     }
    }
   } catch (error) {
-   // Hata durumunda geri al
    setFavorites(previousFavorites);
    if (typeof window !== "undefined") {
     localStorage.setItem("favorites", JSON.stringify(previousFavorites));
@@ -467,12 +460,10 @@ export function CartProvider({ children }) {
    }
   };
 
-  // İlk yüklemede güncelle
   const timeoutId = setTimeout(() => {
    updateCartPrices();
-  }, 1000); // 1 saniye bekle (sayfa yüklenmesini bekle)
+  }, 1000);
 
-  // Sayfa görünür olduğunda veya odaklandığında yeniden kontrol et
   const handleVisibilityChange = () => {
    if (!document.hidden) {
     updateCartPrices();
@@ -483,7 +474,6 @@ export function CartProvider({ children }) {
    updateCartPrices();
   };
 
-  // Custom event dinle (sepet sayfası güncellediğinde)
   const handleCartUpdate = () => {
    updateCartPrices();
   };
