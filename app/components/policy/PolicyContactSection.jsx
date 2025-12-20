@@ -1,6 +1,6 @@
 "use client";
 
-export default function PolicyContactSection({ description, email = "destek@shop.co" }) {
+export default function PolicyContactSection({ description, email = "info@yazici.gen.tr" }) {
  return (
   <section>
    <h2 className="text-2xl font-bold text-gray-900 mb-4">İletişim</h2>
@@ -9,7 +9,7 @@ export default function PolicyContactSection({ description, email = "destek@shop
      {description || "Sorularınız için bizimle iletişime geçebilirsiniz:"}
     </p>
     <div className="bg-indigo-50 rounded-lg p-6 border border-indigo-100">
-     <p className="font-semibold text-gray-900 mb-2">SHOP.CO</p>
+     <p className="font-semibold text-gray-900 mb-2">PROFILO</p>
      <p className="text-gray-700 mb-1">
       <strong>E-posta:</strong> {email}
      </p>

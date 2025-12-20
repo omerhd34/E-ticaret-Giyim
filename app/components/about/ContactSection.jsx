@@ -9,9 +9,9 @@ export default function ContactSection() {
      Sorularınız, önerileriniz veya geri bildirimleriniz için bizimle iletişime geçebilirsiniz:
     </p>
     <div className="space-y-2 text-gray-700">
-     <p className="font-semibold text-gray-900">SHOP.CO</p>
+     <p className="font-semibold text-gray-900">PROFILO</p>
      <p>
-      <strong>E-posta:</strong> destek@shop.co
+      <strong>E-posta:</strong> info@yazici.gen.tr
      </p>
      <p>
       <strong>Telefon:</strong> 0507 849 29 03

@@ -24,10 +24,21 @@ export default function AdminHomePage() {
    try {
     const checkRes = await axiosInstance.get("/api/auth/check");
     const checkData = checkRes.data;
+
+    // Debug bilgisi
+    console.log('🔐 Auth check response:', checkData);
+
     if (!checkData?.authenticated) {
+     console.error('❌ Authentication başarısız!', checkData);
+     // Cookie yoksa, localStorage'a geçici token kaydet (fallback)
+     if (typeof window !== 'undefined' && !checkData?.debug?.hasSession) {
+      console.warn('⚠️ Cookie bulunamadı, localStorage kontrol ediliyor...');
+     }
      router.push("/admin-giris");
      return;
     }
+
+    console.log('✅ Authentication başarılı!');
 
     setDashboardLoading(true);
     try {

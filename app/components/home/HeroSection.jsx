@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { HiArrowRight, HiSparkles } from "react-icons/hi";
 
 export default function HeroSection() {
@@ -7,32 +8,46 @@ export default function HeroSection() {
   <section className="relative bg-linear-to-r from-indigo-600 to-purple-600 text-white overflow-hidden">
    <div className="absolute inset-0 bg-black/10"></div>
    <div className="container mx-auto px-4 py-24 md:py-32 relative z-10">
-    <div className="max-w-3xl">
-     <span className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold mb-4">
-      <HiSparkles size={18} />
-      Yeni Sezon Koleksiyonu
-     </span>
-     <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
-      Erkek Giyim
-      <br />
-      <span className="text-yellow-300">Stilinizi Yansıtın</span>
-     </h1>
-     <p className="text-xl md:text-2xl mb-8 text-indigo-100">
-      En yeni trendler ve kaliteli ürünlerle gardırobunuzu yenileyin
-     </p>
-     <div className="flex flex-wrap gap-4">
-      <Link
-       href="/"
-       className="bg-white text-indigo-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-300 hover:text-gray-900 transition flex items-center gap-2 shadow-lg"
-      >
-       Alışverişe Başla <HiArrowRight size={20} />
-      </Link>
-      <Link
-       href="/kategori/indirim"
-       className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-indigo-600 transition"
-      >
-       İndirimleri Keşfet
-      </Link>
+    <div className="flex items-center gap-8 lg:gap-12">
+     <div className="flex-1 max-w-3xl">
+      <span className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold mb-4">
+       <HiSparkles size={18} />
+       Hızlı ve Güvenilir Teslimat
+      </span>
+      <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
+       Yazıcı Ticaret
+       <br />
+       <span className="text-yellow-300">Kalite ve Güven</span>
+      </h1>
+      <p className="text-xl md:text-2xl mb-8 text-indigo-100">
+       Beyaz eşyadan elektroniğe kadar tüm ürünlerimiz, güvenle sizleri bekliyor.
+      </p>
+      <div className="flex flex-wrap gap-4">
+       <Link
+        href="/"
+        className="bg-white text-indigo-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-300 hover:text-gray-900 transition flex items-center gap-2 shadow-lg"
+       >
+        Alışverişe Başla <HiArrowRight size={20} />
+       </Link>
+       <Link
+        href="/kategori/indirim"
+        className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-indigo-600 transition"
+       >
+        İndirimleri Keşfet
+       </Link>
+      </div>
+     </div>
+     <div className="hidden lg:block flex-1 max-w-md ml-auto">
+      <div className="relative flex justify-end">
+       <Image
+        src="/prof.png"
+        alt="PROFILO"
+        width={450}
+        height={450}
+        className="w-full h-auto object-contain"
+        priority
+       />
+      </div>
      </div>
     </div>
    </div>

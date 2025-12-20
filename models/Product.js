@@ -12,6 +12,11 @@ const ProductSchema = new mongoose.Schema({
   unique: true,
   lowercase: true,
  },
+ serialNumber: {
+  type: String,
+  default: '',
+  trim: true,
+ },
  description: {
   type: String,
   required: [true, 'Ürün açıklaması gereklidir'],
@@ -38,13 +43,60 @@ const ProductSchema = new mongoose.Schema({
   type: String,
   required: true,
  }],
- sizes: [{
-  type: String,
-  enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50'],
- }],
  colors: [{
-  name: String,
+  name: {
+   type: String,
+   required: true,
+  },
   hexCode: String,
+  price: {
+   type: Number,
+   required: true,
+   min: 0,
+  },
+  discountPrice: {
+   type: Number,
+   default: null,
+   min: 0,
+  },
+  serialNumber: {
+   type: String,
+   required: true,
+   trim: true,
+  },
+  images: [{
+   type: String,
+   required: true,
+  }],
+  stock: {
+   type: Number,
+   default: 0,
+   min: 0,
+  },
+  manualLink: {
+   type: String,
+   default: '',
+   trim: true,
+  },
+  specifications: [{
+   category: {
+    type: String,
+    required: true,
+    trim: true,
+   },
+   items: [{
+    key: {
+     type: String,
+     required: true,
+     trim: true,
+    },
+    value: {
+     type: String,
+     required: true,
+     trim: true,
+    },
+   }],
+  }],
  }],
  stock: {
   type: Number,
@@ -60,6 +112,44 @@ const ProductSchema = new mongoose.Schema({
   type: String,
   default: '',
  },
+ dimensions: {
+  height: {
+   type: Number,
+   default: null,
+  },
+  width: {
+   type: Number,
+   default: null,
+  },
+  depth: {
+   type: Number,
+   default: null,
+  },
+ },
+ netWeight: {
+  type: Number,
+  default: null,
+  min: 0,
+ },
+ specifications: [{
+  category: {
+   type: String,
+   required: true,
+   trim: true,
+  },
+  items: [{
+   key: {
+    type: String,
+    required: true,
+    trim: true,
+   },
+   value: {
+    type: String,
+    required: true,
+    trim: true,
+   },
+  }],
+ }],
  tags: [{
   type: String,
  }],
@@ -116,5 +206,10 @@ const ProductSchema = new mongoose.Schema({
 
 ProductSchema.index({ name: 'text', description: 'text', tags: 'text' });
 
-export default mongoose.models.Product || mongoose.model('Product', ProductSchema);
+// Model'i cache'den temizle ve yeniden oluştur (Next.js hot reload için)
+if (mongoose.models.Product) {
+ delete mongoose.models.Product;
+}
+
+export default mongoose.model('Product', ProductSchema);
 

@@ -3,14 +3,18 @@ import Link from "next/link";
 import Image from "next/image";
 
 const CATEGORIES = [
- { name: "Tişört", img: "/1.jpeg", url: "/kategori/giyim/tisort" },
- { name: "Gömlek", img: "/1.jpeg", url: "/kategori/giyim/gomlek" },
- { name: "Pantolon", img: "/3.jpg", url: "/kategori/giyim/pantolon" },
- { name: "Ayakkabı", img: "/4.jpg", url: "/kategori/ayakkabi" },
- { name: "Sweatshirt", img: "/5.webp", url: "/kategori/giyim/sweatshirt" },
- { name: "Mont", img: "/6.webp", url: "/kategori/giyim/dis-giyim" },
- { name: "Aksesuar", img: "/4.jpg", url: "/kategori/aksesuar" },
- { name: "Spor", img: "/3.jpg", url: "/kategori/giyim/esofman" },
+ { name: "Buzdolabı", img: "/buzdolabi.webp", url: "/kategori/beyaz-esya/buzdolabi" },
+ { name: "Çamaşır Makinesi", img: "/camasir.png", url: "/kategori/beyaz-esya/camasir-makinesi" },
+ { name: "Bulaşık Makinesi", img: "/bulasik.png", url: "/kategori/beyaz-esya/bulasik-makinesi" },
+ { name: "Fırın", img: "/firin.png", url: "/kategori/beyaz-esya/firin" },
+ { name: "Set Üstü Ocak", img: "/ocak.png", url: "/kategori/beyaz-esya/set-ustu-ocak" },
+ { name: "Televizyon", img: "/tv.png", url: "/kategori/televizyon" },
+ { name: "Elektrikli Süpürge", img: "/supurge.png", url: "/kategori/elektrikli-supurge" },
+ { name: "Kurutma Makinesi", img: "/kurutma.png", url: "/kategori/beyaz-esya/kurutma-makinesi" },
+ { name: "Ankastre", img: "/ankastre.png", url: "/kategori/ankastre" },
+ { name: "Klima", img: "/klima.png", url: "/kategori/klima" },
+ { name: "Su Arıtma Cihazı", img: "/suaritma.png", url: "/kategori/su-sebilleri-ve-su-aritma/su-aritma-cihazi" },
+ { name: "Su Sebili", img: "/susebili.png", url: "/kategori/su-sebilleri-ve-su-aritma/su-sebili" },
 ];
 
 export default function CategoryGrid() {

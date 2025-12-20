@@ -64,6 +64,47 @@ export async function PUT(request, { params }) {
    );
   }
 
+  // Renk bazlı seri numarası validasyonu (eğer renkler değiştiriliyorsa)
+  if (body.colors !== undefined && Array.isArray(body.colors)) {
+   if (body.colors.length === 0) {
+    return NextResponse.json(
+     { success: false, error: 'En az bir renk eklemelisiniz!' },
+     { status: 400 }
+    );
+   }
+
+   // Her renk için seri numarası kontrolü
+   for (const color of body.colors) {
+    if (!color.serialNumber || !color.serialNumber.trim()) {
+     return NextResponse.json(
+      { success: false, error: `${color.name || 'Renk'} için seri numarası gereklidir!` },
+      { status: 400 }
+     );
+    }
+    const serialNumber = color.serialNumber.trim();
+
+    // Renk seviyesinde seri numarası benzersizliği kontrolü (mevcut ürün hariç)
+    const existingProduct = await Product.findOne({
+     'colors.serialNumber': serialNumber,
+     _id: { $ne: id }
+    });
+    if (existingProduct) {
+     return NextResponse.json(
+      { success: false, error: `Seri numarası "${serialNumber}" başka bir ürün tarafından kullanılıyor!` },
+      { status: 400 }
+     );
+    }
+   }
+
+   // İlk rengin fiyatını ve resimlerini varsayılan olarak kullan
+   if (body.colors.length > 0) {
+    body.price = body.colors[0].price || body.price || existingProduct.price;
+    body.discountPrice = body.colors[0].discountPrice !== undefined ? body.colors[0].discountPrice : (body.discountPrice !== undefined ? body.discountPrice : existingProduct.discountPrice);
+    body.images = body.colors[0].images || body.images || existingProduct.images;
+    body.serialNumber = body.colors[0].serialNumber || body.serialNumber || existingProduct.serialNumber;
+   }
+  }
+
   // Slug oluştur (eğer name değiştiyse)
   let slug = existingProduct.slug;
   if (body.name && body.name !== existingProduct.name) {
@@ -111,15 +152,6 @@ export async function PUT(request, { params }) {
    }
   }
 
-  const validSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', "3XL", '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50'];
-  let processedSizes = existingProduct.sizes;
-  if (body.sizes && Array.isArray(body.sizes)) {
-   processedSizes = body.sizes.map(s => {
-    const upperSize = String(s).trim().toUpperCase();
-    return validSizes.includes(upperSize) ? upperSize : null;
-   }).filter(Boolean);
-  }
-
   // Eski fiyatları ve stoku kaydet (bildirim için)
   const oldPrice = existingProduct.price;
   const oldDiscountPrice = existingProduct.discountPrice || null;
@@ -128,13 +160,21 @@ export async function PUT(request, { params }) {
    : oldPrice;
   const oldStock = existingProduct.stock || 0;
 
+  // Renk bazlı stokların toplamını hesapla (eğer renkler gönderildiyse)
+  let calculatedStock = body.stock;
+  if (body.colors && Array.isArray(body.colors) && body.colors.length > 0) {
+   calculatedStock = body.colors.reduce((sum, color) => {
+    return sum + (Number(color.stock) || 0);
+   }, 0);
+  }
+
   let product;
   try {
    product = await Product.findByIdAndUpdate(
     id,
     {
      ...body,
-     sizes: processedSizes,
+     stock: calculatedStock, // Renk bazlı stokların toplamı
      slug: slug,
     },
     { new: true, runValidators: true }

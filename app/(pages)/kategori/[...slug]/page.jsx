@@ -2,11 +2,25 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { MENU_ITEMS } from "@/app/components/ui/Header";
+import { useCart } from "@/context/CartContext";
 import CategoryHeader from "@/app/components/category/CategoryHeader";
 import CategoryToolbar from "@/app/components/category/CategoryToolbar";
 import CategoryProducts from "@/app/components/category/CategoryProducts";
 import CategoryFiltersSidebar from "@/app/components/category/CategoryFiltersSidebar";
 import CategoryFiltersModal from "@/app/components/category/CategoryFiltersModal";
+import ProductBreadcrumb from "@/app/components/product/ProductBreadcrumb";
+import ProductImageGallery from "@/app/components/product/ProductImageGallery";
+import ProductRating from "@/app/components/product/ProductRating";
+import ProductPrice from "@/app/components/product/ProductPrice";
+import ProductStockStatus from "@/app/components/product/ProductStockStatus";
+import ProductColorSelector from "@/app/components/product/ProductColorSelector";
+import ProductQuantitySelector from "@/app/components/product/ProductQuantitySelector";
+import ProductActions from "@/app/components/product/ProductActions";
+import ProductFeatures from "@/app/components/product/ProductFeatures";
+import ProductAllFeatures from "@/app/components/product/ProductAllFeatures";
+import ProductLoading from "@/app/components/product/ProductLoading";
+import ProductNotFound from "@/app/components/product/ProductNotFound";
+import Toast from "@/app/components/ui/Toast";
 
 export default function KategoriPage() {
  const params = useParams();
@@ -23,7 +37,6 @@ export default function KategoriPage() {
  const [filters, setFilters] = useState({
   minPrice: "",
   maxPrice: "",
-  sizes: [],
   brands: [],
   sortBy: "-createdAt",
  });
@@ -31,8 +44,27 @@ export default function KategoriPage() {
  const [availableBrands, setAvailableBrands] = useState([]);
  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
 
+ // Ürün detay sayfası için state'ler
+ const [product, setProduct] = useState(null);
+ const [selectedImage, setSelectedImage] = useState(0);
+ const [selectedColor, setSelectedColor] = useState(null);
+ const [selectedColorObj, setSelectedColorObj] = useState(null);
+ const [quantity, setQuantity] = useState(1);
+ const [addedToCart, setAddedToCart] = useState(false);
+ const [canRate, setCanRate] = useState(false);
+ const [userRating, setUserRating] = useState(0);
+ const [hoverRating, setHoverRating] = useState(0);
+ const [ratingSubmitted, setRatingSubmitted] = useState(false);
+ const [checkingRating, setCheckingRating] = useState(true);
+ const [ratingMessage, setRatingMessage] = useState("");
+ const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+
+ const { addToCart, addToFavorites, removeFromFavorites, isFavorite } = useCart();
 
  const slugString = useMemo(() => slug.join('/'), [slug]);
+
+ // Eğer slug 3 parça ise (category/subcategory/serialNumber), ürün detayı göster
+ const isProductDetailPage = slug.length === 3;
 
  const fetchProducts = useCallback(async () => {
   setLoading(true);
@@ -40,43 +72,73 @@ export default function KategoriPage() {
    let category = "";
    let subCategory = "";
    let categorySlug = "";
+   let mainMenuItem = null;
 
    if (slug.length > 0) {
-    // URL'den gelen kategori adını gerçek kategori adına çevir
-    // Önce decode et (URL-encoded karakterler için)
     categorySlug = decodeURIComponent(slug[0]);
-    const categoryMap = {
-     giyim: "Giyim",
-     ayakkabi: "Ayakkabı",
-     aksesuar: "Aksesuar",
-     yeni: "YENİ GELENLER",
-     indirim: "İndirimler"
-    };
-    category = categoryMap[categorySlug] || categorySlug;
+
+    mainMenuItem = MENU_ITEMS.find(item => {
+     const itemPath = item.path.replace('/kategori/', '');
+     return itemPath === categorySlug || itemPath === categorySlug.replace(/-/g, '-');
+    });
+
+    if (mainMenuItem) {
+     category = mainMenuItem.name;
+    } else {
+     for (const menuItem of MENU_ITEMS) {
+      if (menuItem.subCategories) {
+       const subCat = menuItem.subCategories.find(sub => {
+        const subPath = sub.path.replace('/kategori/', '');
+        return subPath === categorySlug;
+       });
+       if (subCat) {
+        category = subCat.name;
+        mainMenuItem = menuItem;
+        break;
+       }
+      }
+     }
+
+     if (!category) {
+      const categoryMap = {
+       giyim: "Giyim",
+       ayakkabi: "Ayakkabı",
+       aksesuar: "Aksesuar",
+       yeni: "YENİ GELENLER",
+       indirim: "İndirimler"
+      };
+      category = categoryMap[categorySlug] || categorySlug;
+     }
+    }
 
     if (slug.length > 1) {
-     // Alt kategori slug'ını gerçek alt kategori adına çevir
      const subCategorySlug = decodeURIComponent(slug[1]);
-     // MENU_ITEMS'den alt kategori adını bul
-     const menuItem = MENU_ITEMS.find(item => {
-      const itemPath = item.path.replace('/kategori/', '');
-      return itemPath === categorySlug || itemPath.startsWith(categorySlug + '/');
-     });
+     // Ana kategoriyi bul (eğer bulunamadıysa)
+     if (!mainMenuItem) {
+      mainMenuItem = MENU_ITEMS.find(item => {
+       const itemPath = item.path.replace('/kategori/', '');
+       return itemPath === categorySlug || itemPath.startsWith(categorySlug + '/');
+      });
+     }
 
-     if (menuItem && menuItem.subCategories) {
-      const subCat = menuItem.subCategories.find(
-       sub => sub.path.replace(`/kategori/${categorySlug}/`, '').replace(/-/g, '') === subCategorySlug.replace(/-/g, '')
+     if (mainMenuItem && mainMenuItem.subCategories) {
+      const subCat = mainMenuItem.subCategories.find(
+       sub => {
+        // Alt kategori path'inden ana kategoriyi çıkar ve karşılaştır
+        const subPath = sub.path.replace(`/kategori/${categorySlug}/`, '').replace(/-/g, '');
+        return subPath === subCategorySlug.replace(/-/g, '');
+       }
       );
       if (subCat) {
        subCategory = subCat.name;
       } else {
-       // Eğer bulunamazsa, slug'ı formatla (ilk harfi büyük, tireleri boşluk yap)
+       // Alt kategori bulunamadıysa, slug'dan oluştur
        subCategory = subCategorySlug
         .replace(/-/g, ' ')
         .replace(/\b\w/g, l => l.toUpperCase());
       }
      } else {
-      // Alt kategori mapping yoksa slug'ı formatla
+      // Ana kategori bulunamadıysa veya alt kategorisi yoksa, slug'dan oluştur
       subCategory = subCategorySlug
        .replace(/-/g, ' ')
        .replace(/\b\w/g, l => l.toUpperCase());
@@ -84,37 +146,45 @@ export default function KategoriPage() {
     }
    }
 
-   let url = "/api/products?limit=50";
+   let url = "/api/products?limit=1000";
 
-   // Özel kategoriler için özel filtreleme
    if (categorySlug === "yeni") {
-    // Yeni ürünler için isNew parametresi ekle
     url += `&isNew=true`;
    } else if (categorySlug === "indirim") {
-    // İndirimli ürünler için kategori parametresi ekle
     url += `&category=${encodeURIComponent(category)}`;
    } else {
-    // Normal kategoriler için kategori filtresi ekle
     if (category) url += `&category=${encodeURIComponent(category)}`;
    }
 
    if (subCategory) url += `&subCategory=${encodeURIComponent(subCategory)}`;
    if (filters.sortBy) url += `&sort=${filters.sortBy}`;
 
+   // Debug: kategori bilgilerini logla
+   if (process.env.NODE_ENV === 'development') {
+    console.log('Category Slug:', categorySlug);
+    console.log('Category:', category);
+    console.log('SubCategory:', subCategory);
+    console.log('API URL:', url);
+   }
+
    const res = await fetch(url);
    const data = await res.json();
+
+   // Debug: API yanıtını logla
+   if (process.env.NODE_ENV === 'development') {
+    console.log('API Response:', data);
+    console.log('Products Count:', data.data?.length || 0);
+   }
 
    if (data.success) {
     let filteredProducts = data.data;
 
-    // İndirimli ürünler için client-side filtreleme (price'dan küçük olmalı)
     if (categorySlug === "indirim") {
      filteredProducts = filteredProducts.filter(p =>
       p.discountPrice && p.discountPrice > 0 && p.discountPrice < p.price
      );
     }
 
-    // Price filter
     if (filters.minPrice) {
      filteredProducts = filteredProducts.filter(
       (p) => {
@@ -132,19 +202,6 @@ export default function KategoriPage() {
      );
     }
 
-    // Size filter
-    if (filters.sizes.length > 0) {
-     filteredProducts = filteredProducts.filter((p) => {
-      if (!p.sizes || !Array.isArray(p.sizes) || p.sizes.length === 0) {
-       return false;
-      }
-      // Beden değerlerini string'e çevir ve karşılaştır
-      return p.sizes.some((size) => {
-       const sizeStr = String(size).trim();
-       return filters.sizes.includes(sizeStr) || filters.sizes.some(fs => String(fs).trim() === sizeStr);
-      });
-     });
-    }
 
     // Brand filter
     if (filters.brands.length > 0) {
@@ -175,20 +232,169 @@ export default function KategoriPage() {
   } finally {
    setLoading(false);
   }
- }, [slugString, filters.sortBy, filters.sizes, filters.brands, filters.minPrice, filters.maxPrice]);
+ }, [slug, filters.sortBy, filters.brands, filters.minPrice, filters.maxPrice]);
+
+ // Ürün detay sayfası için fetch
+ const fetchProductBySerialNumber = useCallback(async (serialNumber) => {
+  setLoading(true);
+  try {
+   const res = await fetch("/api/products?limit=1000");
+   const data = await res.json();
+
+   if (data.success) {
+    // Renk seviyesinde seri numarasına göre ürün bul
+    const foundProduct = data.data.find((p) => {
+     if (!p.colors || !Array.isArray(p.colors)) return false;
+     return p.colors.some(c => {
+      if (typeof c === 'object' && c.serialNumber) {
+       return c.serialNumber === serialNumber;
+      }
+      return false;
+     });
+    });
+
+    if (foundProduct) {
+     // Seri numarasına sahip rengi bul
+     const colorWithSerial = foundProduct.colors.find(c => {
+      if (typeof c === 'object' && c.serialNumber) {
+       return c.serialNumber === serialNumber;
+      }
+      return false;
+     });
+
+     setProduct(foundProduct);
+     if (colorWithSerial) {
+      setSelectedColor(colorWithSerial.name);
+      setSelectedColorObj(colorWithSerial);
+      setSelectedImage(0);
+     } else if (foundProduct.colors && foundProduct.colors.length > 0) {
+      const firstColor = typeof foundProduct.colors[0] === 'object' ? foundProduct.colors[0] : { name: foundProduct.colors[0] };
+      setSelectedColor(firstColor.name);
+      setSelectedColorObj(firstColor);
+      setSelectedImage(0);
+     }
+     checkCanRate(foundProduct._id);
+    }
+   }
+  } catch (error) {
+  } finally {
+   setLoading(false);
+  }
+ }, []);
+
+ const checkCanRate = async (productId) => {
+  try {
+   setCheckingRating(true);
+   const res = await fetch(`/api/products/${productId}/rating`, {
+    credentials: "include",
+   });
+   const data = await res.json();
+   if (data.success) {
+    setCanRate(data.canRate);
+    setRatingMessage(data.message || "");
+    if (data.userRating) {
+     setUserRating(Number(data.userRating) || 0);
+    }
+   }
+  } catch (error) {
+   setCanRate(false);
+   setRatingMessage("");
+  } finally {
+   setCheckingRating(false);
+  }
+ };
+
+ const handleSubmitRating = async (rating) => {
+  if (!product || !canRate) return;
+
+  try {
+   const res = await fetch(`/api/products/${product._id}/rating`, {
+    method: "POST",
+    headers: {
+     "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ rating }),
+   });
+
+   const data = await res.json();
+
+   if (data.success) {
+    setRatingSubmitted(true);
+    setCanRate(false);
+    setProduct({
+     ...product,
+     rating: data.data.rating,
+     reviewCount: data.data.reviewCount,
+    });
+    setToast({ show: true, message: "Puanınız başarıyla kaydedildi!", type: "success" });
+   } else {
+    setToast({ show: true, message: data.message || "Puan verilemedi", type: "error" });
+   }
+  } catch (error) {
+   setToast({ show: true, message: "Bir hata oluştu. Lütfen tekrar deneyin.", type: "error" });
+  }
+ };
+
+ const handleAddToCart = () => {
+  if (!product) return;
+
+  // Renk bazlı bilgileri hesapla
+  const currentColorObj = selectedColorObj || (product.colors && product.colors.length > 0
+   ? (typeof product.colors[0] === 'object' ? product.colors[0] : null)
+   : null);
+
+  const colorPrice = currentColorObj?.price || product.price;
+  const colorDiscountPrice = currentColorObj?.discountPrice !== undefined ? currentColorObj.discountPrice : product.discountPrice;
+  const colorImages = currentColorObj?.images && currentColorObj.images.length > 0 ? currentColorObj.images : product.images;
+  const colorSerialNumber = currentColorObj?.serialNumber || product.serialNumber;
+  const colorStock = currentColorObj?.stock !== undefined ? currentColorObj.stock : product.stock;
+
+  const stockToCheck = colorStock;
+  if (stockToCheck === 0) {
+   setToast({ show: true, message: "Bu ürün stokta bulunmamaktadır.", type: "error" });
+   return;
+  }
+
+  if (quantity > 10) {
+   setToast({ show: true, message: "Bir üründen en fazla 10 adet alabilirsiniz.", type: "error" });
+   setQuantity(10);
+   return;
+  }
+
+  const productToAdd = {
+   ...product,
+   price: colorPrice,
+   discountPrice: colorDiscountPrice,
+   serialNumber: colorSerialNumber,
+   images: colorImages,
+   stock: stockToCheck,
+  };
+
+  addToCart(productToAdd, null, selectedColor, quantity);
+  setAddedToCart(true);
+  setTimeout(() => setAddedToCart(false), 2000);
+ };
+
+ const handleFavoriteToggle = () => {
+  if (!product) return;
+
+  if (isFavorite(product._id)) {
+   removeFromFavorites(product._id);
+  } else {
+   addToFavorites(product);
+  }
+ };
 
  useEffect(() => {
-  fetchProducts();
- }, [fetchProducts]);
+  if (isProductDetailPage && slug.length === 3) {
+   const serialNumber = decodeURIComponent(slug[2]);
+   fetchProductBySerialNumber(serialNumber);
+  } else {
+   fetchProducts();
+  }
+ }, [isProductDetailPage, slug, fetchProducts, fetchProductBySerialNumber]);
 
- const handleSizeToggle = (size) => {
-  setFilters((prev) => ({
-   ...prev,
-   sizes: prev.sizes.includes(size)
-    ? prev.sizes.filter((s) => s !== size)
-    : [...prev.sizes, size],
-  }));
- };
 
  const handleBrandToggle = (brand) => {
   setFilters((prev) => ({
@@ -203,7 +409,6 @@ export default function KategoriPage() {
   setFilters({
    minPrice: "",
    maxPrice: "",
-   sizes: [],
    brands: [],
    sortBy: "-createdAt",
   });
@@ -227,49 +432,264 @@ export default function KategoriPage() {
 
  const getCategoryName = () => {
   if (slug.length === 0) return "Tüm Ürünler";
-  // URL-encoded karakterleri decode et
+
   const decodedSlug = decodeURIComponent(slug[0]);
-  const mainCat = categoryNames[decodedSlug] || decodedSlug;
+  let mainCat = "";
+  let subCat = "";
+
+  // Önce MENU_ITEMS'de ana kategoriyi ara
+  let mainMenuItem = MENU_ITEMS.find(item => {
+   const itemPath = item.path.replace('/kategori/', '');
+   return itemPath === decodedSlug;
+  });
+
+  if (mainMenuItem) {
+   mainCat = mainMenuItem.name;
+  } else {
+   // Ana kategoride bulunamadıysa, alt kategorilerde ara (eski URL formatı için)
+   for (const menuItem of MENU_ITEMS) {
+    if (menuItem.subCategories) {
+     const subCatItem = menuItem.subCategories.find(sub => {
+      const subPath = sub.path.replace('/kategori/', '');
+      // Yeni format: /kategori/beyaz-esya/buzdolabi
+      // Eski format: /kategori/buzdolabi
+      return subPath === decodedSlug || subPath.endsWith('/' + decodedSlug);
+     });
+     if (subCatItem) {
+      subCat = subCatItem.name;
+      mainCat = menuItem.name;
+      mainMenuItem = menuItem;
+      break;
+     }
+    }
+   }
+
+   // Hala bulunamadıysa fallback kullan
+   if (!mainCat) {
+    mainCat = categoryNames[decodedSlug] || decodedSlug;
+   }
+  }
+
+  // Alt kategori varsa (yeni format: /kategori/beyaz-esya/buzdolabi)
   if (slug.length > 1) {
    const decodedSubSlug = decodeURIComponent(slug[1]);
-   return `${mainCat} - ${decodedSubSlug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}`;
+
+   // Ana kategoriyi bul (eğer bulunamadıysa)
+   if (!mainMenuItem) {
+    mainMenuItem = MENU_ITEMS.find(item => {
+     const itemPath = item.path.replace('/kategori/', '');
+     return itemPath === decodedSlug;
+    });
+   }
+
+   if (mainMenuItem && mainMenuItem.subCategories) {
+    const subCatItem = mainMenuItem.subCategories.find(sub => {
+     const subPath = sub.path.replace(`/kategori/${decodedSlug}/`, '').replace(/-/g, '');
+     return subPath === decodedSubSlug.replace(/-/g, '');
+    });
+    if (subCatItem) {
+     subCat = subCatItem.name;
+    } else {
+     subCat = decodedSubSlug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+    }
+   } else {
+    subCat = decodedSubSlug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+   }
+
+   return subCat || mainCat;
   }
-  return mainCat;
+
+  // Sadece ana kategori veya alt kategori (eski format)
+  return subCat || mainCat;
  };
 
- // Kategoriye göre beden seçenekleri
- const getAvailableSizes = () => {
-  const categorySlug = slug.length > 0 ? decodeURIComponent(slug[0]) : "";
+ // Ürün detay sayfası için renk bazlı bilgiler (sadece ürün detay sayfasında hesapla)
+ let currentColorObj = null;
+ let colorPrice = 0;
+ let colorDiscountPrice = null;
+ let colorImages = [];
+ let colorSerialNumber = "";
+ let colorStock = 0;
+ let hasDiscount = false;
+ let displayPrice = 0;
+ let discountPercentage = 0;
 
-  // İndirimler ve Yeni Gelenler sayfalarında tüm bedenler
-  if (categorySlug === "indirim" || categorySlug === "yeni") {
-   return ["XS", "S", "M", "L", "XL", "XXL", "3XL", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"];
+ if (isProductDetailPage && product) {
+  currentColorObj = selectedColorObj || (product.colors && product.colors.length > 0
+   ? (typeof product.colors[0] === 'object' ? product.colors[0] : null)
+   : null);
+
+  colorPrice = currentColorObj?.price || (product.price || 0);
+  colorDiscountPrice = currentColorObj?.discountPrice !== undefined ? currentColorObj.discountPrice : (product.discountPrice || null);
+  colorImages = currentColorObj?.images && currentColorObj.images.length > 0 ? currentColorObj.images : (product.images || []);
+  colorSerialNumber = currentColorObj?.serialNumber || product.serialNumber || "";
+  colorStock = currentColorObj?.stock !== undefined ? currentColorObj.stock : (product.stock || 0);
+
+  hasDiscount = colorDiscountPrice && colorDiscountPrice < colorPrice;
+  displayPrice = hasDiscount ? colorDiscountPrice : colorPrice;
+  discountPercentage = hasDiscount
+   ? Math.round(((colorPrice - colorDiscountPrice) / colorPrice) * 100)
+   : 0;
+ }
+
+ const handleColorSelect = (colorName) => {
+  setSelectedColor(colorName);
+  const color = product?.colors?.find(c => {
+   if (typeof c === 'object') {
+    return c.name === colorName;
+   }
+   return c === colorName;
+  });
+  if (color && typeof color === 'object') {
+   setSelectedColorObj(color);
+   setSelectedImage(0);
+
+   // URL'yi güncelle - yeni renk varyantının serialNumber'ı ile
+   const newSerialNumber = color.serialNumber;
+   if (newSerialNumber && slug.length === 3) {
+    // Mevcut URL: /kategori/category/subcategory/oldSerialNumber
+    // Yeni URL: /kategori/category/subcategory/newSerialNumber
+    const newUrl = `/kategori/${slug[0]}/${slug[1]}/${newSerialNumber}`;
+    router.push(newUrl);
+   }
+  } else {
+   setSelectedColorObj(null);
   }
-
-  // Ayakkabı kategorisinde sadece numaralar
-  if (categorySlug === "ayakkabi") {
-   return ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"];
-  }
-
-  return ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
  };
 
- const availableSizes = getAvailableSizes();
+ // Kategori listesi sayfası için ürün sayısı hesaplama
+ // Her ürün için tüm renk varyantlarını ayrı ürünler olarak say
+ const expandedProductsCount = useMemo(() => {
+  let count = 0;
+  products.forEach((product) => {
+   if (product.colors && product.colors.length > 0) {
+    // Her renk varyantı için ayrı bir ürün say
+    product.colors.forEach((color) => {
+     if (typeof color === 'object' && color.serialNumber) {
+      count++;
+     }
+    });
+   } else {
+    // Renk yoksa normal ürünü say
+    count++;
+   }
+  });
+  return count;
+ }, [products]);
+
+ // Ürün detay sayfası göster
+ if (isProductDetailPage) {
+  if (loading) {
+   return <ProductLoading />;
+  }
+
+  if (!product) {
+   return <ProductNotFound />;
+  }
+
+  return (
+   <div className="min-h-screen bg-gray-50 py-12">
+    <Toast toast={toast} setToast={setToast} />
+
+    <div className="container mx-auto px-4">
+     <ProductBreadcrumb product={product} />
+
+     <div className="grid lg:grid-cols-2 gap-12">
+      <ProductImageGallery
+       images={colorImages}
+       selectedImage={selectedImage}
+       onImageSelect={setSelectedImage}
+       isNew={product.isNew}
+       discountPercentage={discountPercentage}
+       productName={product.name}
+      />
+
+      <div>
+       {product.brand && (
+        <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">
+         {product.brand}
+         {colorSerialNumber && (
+          <span className="ml-2 font-mono text-gray-600 normal-case">- {colorSerialNumber}</span>
+         )}
+        </p>
+       )}
+       {!product.brand && colorSerialNumber && (
+        <p className="text-sm text-gray-500 mb-2">
+         <span className="font-mono text-gray-600">Seri No: {colorSerialNumber}</span>
+        </p>
+       )}
+
+       <h1 className="text-3xl font-black text-gray-900 mb-4">{product.name}</h1>
+
+       <ProductRating
+        product={product}
+        checkingRating={checkingRating}
+        canRate={canRate}
+        ratingSubmitted={ratingSubmitted}
+        hoverRating={hoverRating}
+        userRating={userRating}
+        onHoverRating={setHoverRating}
+        onRatingSubmit={handleSubmitRating}
+       />
+
+       <ProductPrice
+        displayPrice={displayPrice}
+        hasDiscount={hasDiscount}
+        originalPrice={colorPrice}
+       />
+
+       <p className="text-gray-600 mb-6 leading-relaxed max-w-2xl wrap-break-word">
+        {product.description}
+       </p>
+
+       <ProductStockStatus stock={colorStock} />
+
+       <ProductColorSelector
+        colors={product.colors}
+        selectedColor={selectedColor}
+        onColorSelect={handleColorSelect}
+       />
+
+       <ProductQuantitySelector
+        quantity={quantity}
+        stock={colorStock}
+        onQuantityChange={setQuantity}
+       />
+
+       <ProductActions
+        productId={product._id}
+        stock={colorStock}
+        addedToCart={addedToCart}
+        isFavorite={isFavorite(product._id)}
+        onAddToCart={handleAddToCart}
+        onFavoriteToggle={handleFavoriteToggle}
+       />
+
+       <ProductFeatures />
+      </div>
+     </div>
+
+     {/* Tüm Özellikler Bölümü */}
+     <div className="mt-12">
+      <ProductAllFeatures product={product} selectedColor={selectedColor} />
+     </div>
+    </div>
+   </div>
+  );
+ }
 
  return (
   <div className="min-h-screen bg-gray-50">
-   <CategoryHeader categoryName={getCategoryName()} productCount={products.length} />
+   <CategoryHeader categoryName={getCategoryName()} productCount={expandedProductsCount} />
    <div className="container mx-auto px-4 py-8">
     <div className="flex gap-6">
      <CategoryFiltersSidebar
       slug={slug}
       filters={filters}
-      availableSizes={availableSizes}
       availableBrands={availableBrands}
       onClearFilters={clearFilters}
       onMinPriceChange={(value) => setFilters({ ...filters, minPrice: value })}
       onMaxPriceChange={(value) => setFilters({ ...filters, maxPrice: value })}
-      onSizeToggle={handleSizeToggle}
       onBrandToggle={handleBrandToggle}
      />
 
@@ -283,6 +703,7 @@ export default function KategoriPage() {
       <CategoryProducts
        loading={loading}
        products={products}
+       sortBy={filters.sortBy}
        onClearFilters={clearFilters}
       />
      </div>
@@ -293,13 +714,11 @@ export default function KategoriPage() {
     show={showFilters}
     slug={slug}
     filters={filters}
-    availableSizes={availableSizes}
     availableBrands={availableBrands}
     onClose={() => setShowFilters(false)}
     onClearFilters={clearFilters}
     onMinPriceChange={(value) => setFilters({ ...filters, minPrice: value })}
     onMaxPriceChange={(value) => setFilters({ ...filters, maxPrice: value })}
-    onSizeToggle={handleSizeToggle}
     onBrandToggle={handleBrandToggle}
    />
   </div>

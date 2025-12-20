@@ -143,7 +143,6 @@ export function CartProvider({ children }) {
       return {
        ...cartItem,
        ...currentProduct,
-       selectedSize: cartItem.selectedSize,
        selectedColor: cartItem.selectedColor,
        quantity: cartItem.quantity,
        addedAt: cartItem.addedAt,
@@ -235,7 +234,6 @@ export function CartProvider({ children }) {
    const existingItemIndex = prevCart.findIndex(
     (item) =>
      item._id === product._id &&
-     item.selectedSize === selectedSize &&
      item.selectedColor === selectedColor
    );
 
@@ -254,7 +252,6 @@ export function CartProvider({ children }) {
      ...prevCart,
      {
       ...product,
-      selectedSize,
       selectedColor,
       quantity: Math.min(quantity, 10),
       addedAt: Date.now(),
@@ -270,7 +267,6 @@ export function CartProvider({ children }) {
     (item) =>
      !(
       item._id === productId &&
-      item.selectedSize === selectedSize &&
       item.selectedColor === selectedColor
      )
    )
@@ -291,7 +287,6 @@ export function CartProvider({ children }) {
    prevCart.map((item) => {
     if (
      item._id === productId &&
-     item.selectedSize === selectedSize &&
      item.selectedColor === selectedColor
     ) {
      const maxQuantity = Math.min(item.stock || 10, 10);
@@ -433,7 +428,6 @@ export function CartProvider({ children }) {
        return {
         ...cartItem,
         ...currentProduct,
-        selectedSize: cartItem.selectedSize,
         selectedColor: cartItem.selectedColor,
         quantity: cartItem.quantity,
         addedAt: cartItem.addedAt,

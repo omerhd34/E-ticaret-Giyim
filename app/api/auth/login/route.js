@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import dbConnect from '@/lib/dbConnect';
 import Admin from '@/models/Admin';
@@ -35,7 +35,6 @@ export async function POST(request) {
    );
   }
 
-  // Cookie oluştur
   const cookieStore = await cookies();
   cookieStore.set('admin-session', 'authenticated', {
    httpOnly: true,

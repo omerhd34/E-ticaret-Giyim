@@ -1,27 +1,22 @@
+const axios = require('axios');
 const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
 const ADMIN_COOKIE = process.env.ADMIN_COOKIE || "admin-session=authenticated";
 
-const products = [
- {
-  name: "Pekmez",
-  description: "Wild Wood is a brand that makes stylish and comfortable shoes for men and women.",
-  price: 200,
-  /* discountPrice: 199.99, */
-  category: "Ayakkabı",
-  subCategory: "Spor Ayakkabı",
-  images: [
-   "/1.jpeg",
-   "/4.jpg",
-   "/6.webp",
-  ],
-  colors: ["siyah", "beyaz", "mavi"],
-  sizes: ["36", "37", "38", "39", "40", "41", "42", "43"],
-  stock: 0,
-  brand: "Wild Wood",
-  isNew: false,
-  isFeatured: false
- },
-];
+let products;
+(async () => {
+ try {
+  const productsModule = await import('./products.js');
+  products = productsModule.products;
+ } catch (importError) {
+  try {
+   const productsModule = require('./products.js');
+   products = productsModule.products;
+  } catch (requireError) {
+   console.error('products.js yüklenirken hata:', requireError);
+   process.exit(1);
+  }
+ }
+})();
 
 const normalizeColorName = (v) =>
  String(v || "")
@@ -63,13 +58,33 @@ const normalizeColors = (colors) => {
   .map((c) => {
    if (typeof c === "string") {
     const name = c.trim();
-    return name ? { name, hexCode: inferHexCode(name) || undefined } : null;
+    if (!name) return null;
+    return {
+     name,
+     hexCode: inferHexCode(name) || undefined,
+     price: 0,
+     discountPrice: null,
+     serialNumber: "",
+     images: [],
+     stock: 0,
+     manualLink: "",
+    };
    }
    if (c && typeof c === "object") {
     const name = String(c.name || "").trim();
     if (!name) return null;
     const hexCode = c.hexCode ? String(c.hexCode).trim() : "";
-    return { name, hexCode: (hexCode || inferHexCode(name) || undefined) };
+    return {
+     name,
+     hexCode: (hexCode || inferHexCode(name) || undefined),
+     price: c.price !== undefined ? Number(c.price) : 0,
+     discountPrice: c.discountPrice !== undefined && c.discountPrice !== null ? Number(c.discountPrice) : null,
+     serialNumber: c.serialNumber ? String(c.serialNumber).trim() : "",
+     images: Array.isArray(c.images) ? c.images : [],
+     stock: c.stock !== undefined ? Number(c.stock) : 0,
+     specifications: Array.isArray(c.specifications) ? c.specifications : [],
+     manualLink: c.manualLink ? String(c.manualLink).trim() : "",
+    };
    }
    return null;
   })
@@ -78,21 +93,34 @@ const normalizeColors = (colors) => {
 
 async function addProduct(product) {
  try {
+  const normalizedColors = normalizeColors(product.colors);
+
+  if (normalizedColors.length === 0) {
+   return { success: false, error: "En az bir renk eklemelisiniz!" };
+  }
+
+  const defaultPrice = normalizedColors[0].price || 0;
+  const defaultDiscountPrice = normalizedColors[0].discountPrice !== null ? normalizedColors[0].discountPrice : null;
+  const defaultImages = normalizedColors[0].images.length > 0 ? normalizedColors[0].images : [];
+  const defaultSerialNumber = normalizedColors[0].serialNumber || "";
+
   const payload = {
    ...product,
-   colors: normalizeColors(product.colors),
+   price: defaultPrice,
+   discountPrice: defaultDiscountPrice,
+   images: defaultImages,
+   serialNumber: defaultSerialNumber,
+   colors: normalizedColors,
   };
 
-  const response = await fetch(`${BASE_URL}/api/products`, {
-   method: "POST",
+  const response = await axios.post(`${BASE_URL}/api/products`, payload, {
    headers: {
     "Content-Type": "application/json",
     "Cookie": ADMIN_COOKIE
-   },
-   body: JSON.stringify(payload)
+   }
   });
 
-  const data = await response.json();
+  const data = response.data;
 
   if (data.success) {
    return { success: true, data: data.data };
@@ -100,7 +128,8 @@ async function addProduct(product) {
    return { success: false, error: data.error };
   }
  } catch (error) {
-  return { success: false, error: error.message };
+  const errorMessage = error.response?.data?.error || error.message;
+  return { success: false, error: errorMessage };
  }
 }
 
@@ -135,14 +164,46 @@ async function addMultipleProducts(productsArray) {
 }
 
 if (typeof require !== 'undefined' && require.main === module) {
- addMultipleProducts(products)
-  .then(results => {
-   const successCount = results.filter(r => r.success).length;
-   process.exit(0);
-  })
-  .catch(error => {
+ // products yüklenene kadar bekle (dinamik import için)
+ (async () => {
+  // Maksimum 5 saniye bekle
+  let attempts = 0;
+  while (!products && attempts < 50) {
+   await new Promise(resolve => setTimeout(resolve, 100));
+   attempts++;
+  }
+
+  if (!products) {
+   console.error('products.js yüklenemedi!');
    process.exit(1);
-  });
+  }
+
+  addMultipleProducts(products)
+   .then(results => {
+    const successCount = results.filter(r => r.success).length;
+    const errorCount = results.filter(r => !r.success).length;
+    console.log(`\nSonuçlar:`);
+    console.log(`Başarılı: ${successCount}`);
+    console.log(`Hatalı: ${errorCount}`);
+    console.log(`Toplam: ${results.length}`);
+
+    results.forEach((result, index) => {
+     if (result.success) {
+     } else {
+     }
+    });
+
+    setTimeout(() => {
+     process.exit(errorCount > 0 ? 1 : 0);
+    }, 200);
+   })
+   .catch(error => {
+    console.error('Kritik Hata:', error);
+    setTimeout(() => {
+     process.exit(1);
+    }, 200);
+   });
+ })();
 } else {
  if (typeof window !== 'undefined') {
   window.addProduct = addProduct;

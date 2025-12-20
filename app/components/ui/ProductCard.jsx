@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
-import { HiHeart } from "react-icons/hi";
+import { HiHeart, HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import Image from "next/image";
+import { getProductUrl } from "@/app/utils/productUrl";
 
 export default function ProductCard({ product }) {
  const [isImageHovered, setIsImageHovered] = useState(false);
@@ -11,12 +12,25 @@ export default function ProductCard({ product }) {
  const { addToCart, addToFavorites, removeFromFavorites, isFavorite: checkFavorite } = useCart();
  const isFavorite = checkFavorite(product._id);
 
- const images = product.images && product.images.length > 0 ? product.images : ["/1.jpeg"];
+ // Renk bazlı resim ve fiyat
+ const firstColor = product.colors && product.colors.length > 0 && typeof product.colors[0] === 'object'
+  ? product.colors[0]
+  : null;
+ const images = firstColor?.images && firstColor.images.length > 0
+  ? firstColor.images
+  : (product.images && product.images.length > 0 ? product.images : ["/1.jpeg"]);
 
- const hasDiscount = product.discountPrice && product.discountPrice < product.price;
+ const colorPrice = firstColor?.price || product.price;
+ const colorDiscountPrice = firstColor?.discountPrice !== undefined ? firstColor.discountPrice : product.discountPrice;
+ const colorSerialNumber = firstColor?.serialNumber || product.serialNumber;
+
+ const hasDiscount = colorDiscountPrice && colorDiscountPrice < colorPrice;
  const discountPercentage = hasDiscount
-  ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
+  ? Math.round(((colorPrice - colorDiscountPrice) / colorPrice) * 100)
   : 0;
+
+ // Ürün URL'ini oluştur
+ const productUrl = getProductUrl(product, colorSerialNumber);
 
  return (
   <div className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 relative">
@@ -49,21 +63,48 @@ export default function ProductCard({ product }) {
    </button>
 
    <div
-    className="relative aspect-square overflow-hidden bg-gray-100"
+    className="relative aspect-square overflow-hidden bg-gray-100 flex items-center justify-center p-4"
     onMouseEnter={() => setIsImageHovered(true)}
     onMouseLeave={() => setIsImageHovered(false)}
    >
-    <Link href={`/urun/${product.slug}`} className="block w-full h-full">
+    <Link href={productUrl} className="w-full h-full flex items-center justify-center">
      <Image
-      width={500}
-      height={500}
+      width={600}
+      height={600}
       src={images[currentImageIndex]}
       alt={product.name}
-      className={`w-full h-full object-cover transition-transform duration-500 ${isImageHovered ? "scale-110" : "scale-100"
+      quality={90}
+      className={`max-w-full max-h-full object-contain transition-transform duration-500 ${isImageHovered ? "scale-110" : "scale-100"
        }`}
      />
     </Link>
 
+    {images.length > 1 && (
+     <>
+      <button
+       onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+       }}
+       className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-all z-20"
+       aria-label="Önceki resim"
+      >
+       <HiChevronLeft size={20} className="text-gray-700" />
+      </button>
+      <button
+       onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+       }}
+       className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-all z-20"
+       aria-label="Sonraki resim"
+      >
+       <HiChevronRight size={20} className="text-gray-700" />
+      </button>
+     </>
+    )}
    </div>
 
    <div className="px-4 pt-3 pb-2 flex justify-center gap-2">
@@ -88,12 +129,20 @@ export default function ProductCard({ product }) {
     {product.brand && (
      <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
       {product.brand}
+      {colorSerialNumber && (
+       <span className="ml-2 font-mono text-gray-600 normal-case">- {colorSerialNumber}</span>
+      )}
+     </p>
+    )}
+    {!product.brand && colorSerialNumber && (
+     <p className="text-xs text-gray-500 mb-1">
+      <span className="font-mono text-gray-600">Seri No: {colorSerialNumber}</span>
      </p>
     )}
 
     <div className="flex items-center gap-2 mb-2">
      <h3 className="font-semibold text-gray-800 line-clamp-2 flex-1 min-w-0">
-      <Link href={`/urun/${product.slug}`} className="hover:text-indigo-600 transition no-underline">
+      <Link href={productUrl} className="hover:text-indigo-600 transition no-underline">
        {product.name}
       </Link>
      </h3>
@@ -116,37 +165,20 @@ export default function ProductCard({ product }) {
      </div>
     </div>
 
-    {product.sizes && product.sizes.length > 0 && (
-     <div className="flex gap-1 my-3">
-      {product.sizes.slice(0, 5).map((size, idx) => (
-       <span
-        key={idx}
-        className="text-xs border border-gray-300 px-2 py-1 rounded"
-       >
-        {size}
-       </span>
-      ))}
-      {product.sizes.length > 5 && (
-       <span className="text-xs text-gray-500 px-2 py-1">
-        +{product.sizes.length - 5}
-       </span>
-      )}
-     </div>
-    )}
 
     <div className="flex items-center gap-2">
      {hasDiscount ? (
       <>
        <span className="text-lg font-bold text-indigo-600">
-        {product.discountPrice} ₺
+        {colorDiscountPrice} ₺
        </span>
        <span className="text-sm text-gray-400 line-through">
-        {product.price} ₺
+        {colorPrice} ₺
        </span>
       </>
      ) : (
       <span className="text-lg font-bold text-gray-800">
-       {product.price} ₺
+       {colorPrice} ₺
       </span>
      )}
     </div>

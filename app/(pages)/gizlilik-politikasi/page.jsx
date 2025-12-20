@@ -13,7 +13,7 @@ export default function GizlilikPolitikasiPage() {
     <div className="bg-white rounded-xl shadow-md p-8 md:p-12 space-y-8">
      <PolicySection>
       <p className="text-gray-700 leading-relaxed">
-       SHOP.CO olarak, gizliliğinize saygı duyuyor ve kişisel bilgilerinizin korunmasına büyük önem veriyoruz.
+       PROFILO olarak, gizliliğinize saygı duyuyor ve kişisel bilgilerinizin korunmasına büyük önem veriyoruz.
        Bu Gizlilik Politikası, web sitemizi kullandığınızda topladığımız bilgileri, bu bilgileri nasıl kullandığımızı
        ve paylaştığımızı açıklamaktadır.
       </p>
@@ -104,7 +104,7 @@ export default function GizlilikPolitikasiPage() {
 
      <PolicyContactSection
       description="Gizlilik politikamız hakkında sorularınız veya haklarınızı kullanmak istiyorsanız, bizimle iletişime geçebilirsiniz:"
-      email="gizlilik@shop.co"
+      email="info@yazici.gen.tr"
      />
 
      <PolicySection title="Politika Değişiklikleri">

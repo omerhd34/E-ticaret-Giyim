@@ -7,49 +7,61 @@ import { HiSearch, HiUser, HiHeart, HiMenu, HiX, HiPhone, HiChevronDown, HiArrow
 import { FaShoppingCart } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
 import axiosInstance from "@/lib/axios";
+import { getProductUrl } from "@/app/utils/productUrl";
 
 export const MENU_ITEMS = [
- { name: "YENİ GELENLER", path: "/kategori/yeni", isSpecial: true },
  {
-  name: "Giyim",
-  path: "/kategori/giyim",
+  name: "Beyaz Eşya",
+  path: "/kategori/beyaz-esya",
   isSpecial: false,
   subCategories: [
-   { name: "Jean", path: "/kategori/giyim/jean" },
-   { name: "Pantolon", path: "/kategori/giyim/pantolon" },
-   { name: "Tişört", path: "/kategori/giyim/tisort" },
-   { name: "Gömlek", path: "/kategori/giyim/gomlek" },
-   { name: "Sweatshirt", path: "/kategori/giyim/sweatshirt" },
-   { name: "Eşofman", path: "/kategori/giyim/esofman" },
-   { name: "Kazak", path: "/kategori/giyim/kazak" },
-   { name: "Dış Giyim", path: "/kategori/giyim/dis-giyim" },
-   { name: "İç Giyim", path: "/kategori/giyim/ic-giyim" },
-   { name: "Pijama", path: "/kategori/giyim/elbise" },
-   { name: "Takım Elbisesi", path: "/kategori/giyim/takim-elbisesi" },
-   { name: "Kravat", path: "/kategori/aksesuar/kravat" },
-   { name: "Çorap", path: "/kategori/giyim/corap" },
-   { name: "Kemer", path: "/kategori/giyim/kemer" },
+   { name: "Buzdolabı", path: "/kategori/beyaz-esya/buzdolabi" },
+   { name: "Derin Dondurucu", path: "/kategori/beyaz-esya/derin-dondurucu" },
+   { name: "Çamaşır Makinesi", path: "/kategori/beyaz-esya/camasir-makinesi" },
+   { name: "Kurutma Makinesi", path: "/kategori/beyaz-esya/kurutma-makinesi" },
+   { name: "Bulaşık Makinesi", path: "/kategori/beyaz-esya/bulasik-makinesi" },
+   { name: "Fırın", path: "/kategori/beyaz-esya/firin" },
+   { name: "Set Üstü Ocak", path: "/kategori/beyaz-esya/set-ustu-ocak" },
+   { name: "Mikrodalga Fırın", path: "/kategori/beyaz-esya/mikrodalga-firin" },
   ]
  },
+ { name: "Televizyon", path: "/kategori/televizyon", isSpecial: false },
+ { name: "Elektrikli Süpürge", path: "/kategori/elektrikli-supurge", isSpecial: false },
  {
-  name: "Ayakkabı", path: "/kategori/ayakkabi", isSpecial: false,
+  name: "Ankastre",
+  path: "/kategori/ankastre",
+  isSpecial: false,
   subCategories: [
-   { name: "Günlük Ayakkabı", path: "/kategori/ayakkabi/gunluk-ayakkabi" },
-   { name: "Spor Ayakkabı", path: "/kategori/ayakkabi/spor-ayakkabi" },
-   { name: "Bot", path: "/kategori/ayakkabi/bot" },
-   { name: "Terlik", path: "/kategori/ayakkabi/terlik" },
+   { name: "Ankastre Fırın", path: "/kategori/ankastre/ankastre-firin" },
+   { name: "Ankastre Mikrodalga Fırın", path: "/kategori/ankastre/ankastre-mikrodalga-firin" },
+   { name: "Ankastre Ocak", path: "/kategori/ankastre/ankastre-ocak" },
+   { name: "Ankastre Aspiratör / Davlumbaz", path: "/kategori/ankastre/ankastre-aspirator-davlumbaz" },
+   { name: "Ankastre Bulaşık Makinesi", path: "/kategori/ankastre/ankastre-bulasik-makinesi" },
+   { name: "Ankastre Setler", path: "/kategori/ankastre/ankastre-setler" },
+   { name: "Mikrodalga Fırın", path: "/kategori/ankastre/mikrodalga-firin" },
+  ]
+ },
+ { name: "Klima", path: "/kategori/klima", isSpecial: false },
+ {
+  name: "Su Sebilleri ve Su Arıtma",
+  path: "/kategori/su-sebilleri-ve-su-aritma",
+  isSpecial: false,
+  subCategories: [
+   { name: "Su Sebili", path: "/kategori/su-sebilleri-ve-su-aritma/su-sebili" },
+   { name: "Su Arıtma Cihazı", path: "/kategori/su-sebilleri-ve-su-aritma/su-aritma-cihazi" },
   ]
  },
  {
-  name: "Aksesuar", path: "/kategori/aksesuar", isSpecial: false, subCategories: [
-   { name: "Takı", path: "/kategori/aksesuar/takı" },
-   { name: "Güneş Gözlüğü", path: "/kategori/aksesuar/gunes-gozluğu" },
-   { name: "Kuyruklu Takı", path: "/kategori/aksesuar/kuyruklu-takı" },
-   { name: "Kolye", path: "/kategori/aksesuar/kolye" },
-   { name: "Parfüm", path: "/kategori/aksesuar/parfum" },
+  name: "Aksesuarlar / Temizlik ve Bakım Ürünleri",
+  path: "/kategori/aksesuarlar-temizlik-bakim",
+  isSpecial: false,
+  subCategories: [
+   { name: "Aksesuarlar", path: "/kategori/aksesuarlar-temizlik-bakim/aksesuarlar" },
+   { name: "Temizlik Bakım Ürünleri", path: "/kategori/aksesuarlar-temizlik-bakim/temizlik-bakim-urunleri" },
   ]
  },
- { name: "İndirimler", path: "/kategori/indirim", isSpecial: false },
+ { name: "Türk Kahve Makineleri", path: "/kategori/turk-kahve-makineleri", isSpecial: false },
+ { name: "İndirimler", path: "/kategori/indirim", isSpecial: true },
 ];
 
 const Header = () => {
@@ -210,7 +222,7 @@ const Header = () => {
   <header className="w-full bg-white shadow-sm sticky top-0 z-50 font-sans">
    <div className="bg-slate-900 text-white text-[11px] font-medium py-2.5 tracking-wide">
     <div className="container mx-auto px-4 flex justify-between items-center">
-     <p>🎉 500 TL ve üzeri siparişlerde kargo bedava!</p>
+     <p>🎉 2500 TL ve üzeri siparişlerde kargo bedava!</p>
      <div className="hidden sm:flex items-center gap-5">
       <Link href="/destek" className="flex items-center gap-1.5 hover:text-slate-300 transition">
        <HiPhone size={13} /> Destek
@@ -221,8 +233,15 @@ const Header = () => {
 
    <div className="container mx-auto px-4 py-5">
     <div className="flex justify-between items-center gap-6">
-     <Link href="/" className="text-3xl font-black tracking-tighter text-slate-900" onClick={closeMenu}>
-      SHOP<span className="text-indigo-600">.CO</span>
+     <Link href="/" className="flex items-center" onClick={closeMenu}>
+      <Image
+       src="/profilo-favicon.png"
+       alt="PROFILO"
+       width={180}
+       height={60}
+       className="h-14 w-auto"
+       priority
+      />
      </Link>
      <div className="hidden md:flex flex-1 max-w-xl relative search-container">
       <form
@@ -246,7 +265,7 @@ const Header = () => {
           setShowSuggestions(true);
          }
         }}
-        placeholder="Ürün, kategori veya marka ara..."
+        placeholder="Ürün, kategori, marka veya seri no ara..."
         className="w-full bg-slate-100 border border-transparent rounded-full py-3 pl-5 pr-12 focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-100 transition-all outline-none text-sm font-medium placeholder:text-slate-500"
        />
        <button
@@ -260,50 +279,53 @@ const Header = () => {
       {showSuggestions && searchResults.length > 0 && (
        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
         <div className="p-2">
-         {searchResults.map((product) => (
-          <Link
-           key={product._id}
-           href={`/urun/${product.slug}`}
-           onClick={() => setShowSuggestions(false)}
-           className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition cursor-pointer group"
-          >
-           <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0 relative">
-            {product.images?.[0] && (
-             <Image
-              src={product.images[0]}
-              alt={product.name}
-              width={64}
-              height={64}
-              className="w-full h-full object-cover"
-             />
-            )}
-           </div>
-           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-gray-800 truncate group-hover:text-indigo-600 transition">
-             {product.name}
-            </h4>
-            {product.brand && (
-             <p className="text-xs text-gray-500">{product.brand}</p>
-            )}
-            <div className="flex items-center gap-2 mt-1">
-             {product.discountPrice && product.discountPrice < product.price ? (
-              <>
-               <span className="text-sm font-bold text-indigo-600">
-                {product.discountPrice} ₺
-               </span>
-               <span className="text-xs text-gray-400 line-through">
-                {product.price} ₺
-               </span>
-              </>
-             ) : (
-              <span className="text-sm font-bold text-gray-800">
-               {product.price} ₺
-              </span>
+         {searchResults.map((product) => {
+          const productUrl = getProductUrl(product);
+          return (
+           <Link
+            key={product._id}
+            href={productUrl}
+            onClick={() => setShowSuggestions(false)}
+            className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition cursor-pointer group"
+           >
+            <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0 relative">
+             {product.images?.[0] && (
+              <Image
+               src={product.images[0]}
+               alt={product.name}
+               width={64}
+               height={64}
+               className="w-full h-full object-cover"
+              />
              )}
             </div>
-           </div>
-          </Link>
-         ))}
+            <div className="flex-1 min-w-0">
+             <h4 className="font-semibold text-gray-800 truncate group-hover:text-indigo-600 transition">
+              {product.name}
+             </h4>
+             {product.brand && (
+              <p className="text-xs text-gray-500">{product.brand}</p>
+             )}
+             <div className="flex items-center gap-2 mt-1">
+              {product.discountPrice && product.discountPrice < product.price ? (
+               <>
+                <span className="text-sm font-bold text-indigo-600">
+                 {product.discountPrice} ₺
+                </span>
+                <span className="text-xs text-gray-400 line-through">
+                 {product.price} ₺
+                </span>
+               </>
+              ) : (
+               <span className="text-sm font-bold text-gray-800">
+                {product.price} ₺
+               </span>
+              )}
+             </div>
+            </div>
+           </Link>
+          );
+         })}
          {searchTerm && (
           <Link
            href={`/arama?q=${encodeURIComponent(searchTerm)}`}
@@ -373,7 +395,7 @@ const Header = () => {
      <input
       type="text"
       name="searchMobile"
-      placeholder="Ne aramıştınız?"
+      placeholder="Ürün, kategori, marka veya seri no ara..."
       className="w-full bg-slate-100 border border-slate-200 rounded-lg py-2.5 pl-10 pr-4 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
      />
      <HiSearch size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />

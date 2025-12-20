@@ -15,7 +15,7 @@ export default function CerezPolitikasiPage() {
     <div className="bg-white rounded-xl shadow-md p-8 md:p-12 space-y-8">
      <PolicySection>
       <p className="text-gray-700 leading-relaxed">
-       SHOP.CO olarak, web sitemizde çerezler kullanmaktayız. Bu Çerez Politikası, hangi çerezleri kullandığımızı,
+       PROFILO olarak, web sitemizde çerezler kullanmaktayız. Bu Çerez Politikası, hangi çerezleri kullandığımızı,
        neden kullandığımızı ve çerezleri nasıl yönetebileceğinizi açıklamaktadır.
       </p>
      </PolicySection>

@@ -16,7 +16,7 @@ export default function ExchangeTab() {
       <div>
        <h3 className="font-semibold text-gray-900 mb-1">14 Gün Değişim Hakkı</h3>
        <p className="text-gray-700 text-sm">
-        Ürünü teslim aldığınız tarihten itibaren 14 gün içinde beden veya renk değişimi yapabilirsiniz.
+        Ürünü teslim aldığınız tarihten itibaren 14 gün içinde renk değişimi yapabilirsiniz.
        </p>
       </div>
      </div>
@@ -50,7 +50,7 @@ export default function ExchangeTab() {
      <div className="flex items-start gap-4">
       <HiCheckCircle className="text-green-600 shrink-0 mt-1" size={20} />
       <p className="text-gray-700">
-       Sadece beden ve renk değişimi yapılabilir. Farklı ürün değişimi yapılamaz.
+       Sadece renk değişimi yapılabilir. Farklı ürün değişimi yapılamaz.
       </p>
      </div>
      <div className="flex items-start gap-4">
@@ -93,7 +93,7 @@ export default function ExchangeTab() {
       <div className="flex-1">
        <h3 className="font-semibold text-gray-900 mb-2">Değişim Talebi Oluşturun</h3>
        <p className="text-gray-700 text-sm">
-        Müşteri hizmetlerimizle iletişime geçerek değişim talebinizi oluşturun. Hangi beden veya renge değiştirmek istediğinizi belirtin.
+        Müşteri hizmetlerimizle iletişime geçerek değişim talebinizi oluşturun. Hangi renge değiştirmek istediğinizi belirtin.
        </p>
       </div>
      </div>

@@ -1,21 +1,17 @@
 "use client";
 import SubCategoryFilter from "./SubCategoryFilter";
 import PriceFilter from "./PriceFilter";
-import SizeFilter from "./SizeFilter";
 import BrandFilter from "./BrandFilter";
 
 export default function CategoryFiltersSidebar({
  slug,
  filters,
- availableSizes,
  availableBrands,
  onClearFilters,
  onMinPriceChange,
  onMaxPriceChange,
- onSizeToggle,
  onBrandToggle,
 }) {
- const showSizeFilter = slug.length > 0 && decodeURIComponent(slug[0]) !== "aksesuar";
 
  return (
   <aside className="hidden lg:block w-72 shrink-0">
@@ -38,14 +34,6 @@ export default function CategoryFiltersSidebar({
      onMinPriceChange={onMinPriceChange}
      onMaxPriceChange={onMaxPriceChange}
     />
-
-    {showSizeFilter && (
-     <SizeFilter
-      availableSizes={availableSizes}
-      selectedSizes={filters.sizes}
-      onSizeToggle={onSizeToggle}
-     />
-    )}
 
     <BrandFilter
      availableBrands={availableBrands}

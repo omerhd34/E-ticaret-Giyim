@@ -160,7 +160,7 @@ export async function POST(request) {
    quantity: Number(it?.quantity || 1) || 1,
   }));
   const productIds = Array.from(new Set(normalizedItems.map((it) => it.productId).filter(Boolean)));
-  const products = await Product.find({ _id: { $in: productIds } }).select("price discountPrice name slug images").lean();
+  const products = await Product.find({ _id: { $in: productIds } }).select("price discountPrice name slug images serialNumber").lean();
   const productById = new Map(products.map((p) => [String(p._id), p]));
 
   const repricedItems = normalizedItems.map((it) => {
@@ -173,6 +173,7 @@ export async function POST(request) {
     slug: it.slug || p.slug,
     image: it.image || p?.images?.[0] || "",
     price: Number(price || 0),
+    serialNumber: p.serialNumber || "",
    };
   });
   const missing = repricedItems.find((it) => it._missingProduct);
@@ -212,6 +213,23 @@ export async function POST(request) {
   if (!Array.isArray(user.orders)) user.orders = [];
   user.orders.unshift(order);
   await user.save();
+
+  // Ürünlerin soldCount değerlerini güncelle
+  try {
+   for (const item of repricedItems) {
+    const productId = item.productId;
+    if (productId) {
+     await Product.findByIdAndUpdate(
+      productId,
+      { $inc: { soldCount: item.quantity || 1 } },
+      { new: true }
+     );
+    }
+   }
+  } catch (soldCountError) {
+   console.error('[ORDER] soldCount güncelleme hatası:', soldCountError);
+   // Hata olsa bile sipariş oluşturulmuş sayılır
+  }
 
   // Admin'e e-posta bildirimi (best-effort)
   let adminEmailResult = null;

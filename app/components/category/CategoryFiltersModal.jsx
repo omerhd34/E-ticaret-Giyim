@@ -2,25 +2,20 @@
 import { HiX } from "react-icons/hi";
 import SubCategoryFilter from "./SubCategoryFilter";
 import PriceFilter from "./PriceFilter";
-import SizeFilter from "./SizeFilter";
 import BrandFilter from "./BrandFilter";
 
 export default function CategoryFiltersModal({
  show,
  slug,
  filters,
- availableSizes,
  availableBrands,
  onClose,
  onClearFilters,
  onMinPriceChange,
  onMaxPriceChange,
- onSizeToggle,
  onBrandToggle,
 }) {
  if (!show) return null;
-
- const showSizeFilter = slug.length > 0 && decodeURIComponent(slug[0]) !== "aksesuar";
 
  return (
   <div className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden">
@@ -42,15 +37,6 @@ export default function CategoryFiltersModal({
       onMaxPriceChange={onMaxPriceChange}
       isMobile={true}
      />
-
-     {showSizeFilter && (
-      <SizeFilter
-       availableSizes={availableSizes}
-       selectedSizes={filters.sizes}
-       onSizeToggle={onSizeToggle}
-       isMobile={true}
-      />
-     )}
 
      <BrandFilter
       availableBrands={availableBrands}

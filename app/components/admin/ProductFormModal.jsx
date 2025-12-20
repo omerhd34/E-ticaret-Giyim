@@ -1,14 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
-import { HiX, HiUpload } from "react-icons/hi";
+import { HiX, HiUpload, HiChevronDown, HiChevronUp } from "react-icons/hi";
 import Image from "next/image";
 import { MENU_ITEMS } from "@/app/components/ui/Header";
 import axiosInstance from "@/lib/axios";
 
-const MAX_IMAGES = 5;
+const MAX_IMAGES = 15;
 const MAX_DESCRIPTION = 200;
-const MAX_NAME = 25;
-const MAX_BRAND = 20;
+const MAX_NAME = 100;
+const MAX_BRAND = 50;
 
 const normalizeColorName = (v) =>
  String(v || "")
@@ -44,27 +44,6 @@ const inferHexCode = (name) => {
  return COLOR_HEX_MAP[key];
 };
 
-const getAvailableSizes = (category) => {
- if (!category) return [];
- const allSizes = {
-  letterSizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
-  numberSizes: ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"],
-  allSizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"]
- };
- switch (category) {
-  case "Ayakkabı":
-   return allSizes.numberSizes;
-  case "Giyim":
-   return allSizes.letterSizes;
-  case "Aksesuar":
-   return [];
-  case "İndirimler":
-  case "YENİ GELENLER":
-   return allSizes.allSizes;
-  default:
-   return allSizes.allSizes;
- }
-};
 
 const subCategoryOptions = {};
 MENU_ITEMS.forEach((item) => {
@@ -73,15 +52,40 @@ MENU_ITEMS.forEach((item) => {
  }
 });
 
-/**
- * Product Form Modal Component
- * 
- * @param {boolean} show - Modal görünür mü?
- * @param {Object} editingProduct - Düzenlenen ürün (null ise yeni ürün)
- * @param {function} onClose - Modal kapatma callback'i
- * @param {function} onSuccess - Form başarıyla gönderildiğinde callback
- * @param {function} onError - Hata durumunda callback (message ile)
- */
+const categoryBrands = {
+ "Buzdolabı": ["Profilo"],
+ "Kurutma Makinesi": ["Profilo", "Electrolux", "Grundig"],
+ "Set Üstü Ocak": ["Profilo", "Simfer", "Ferre"],
+ "Derin Dondurucu": ["Profilo"],
+ "Bulaşık Makinesi": ["Profilo", "Electrolux", "Grundig"],
+ "Mikrodalga Fırın": ["Profilo", "Simfer"],
+ "Çamaşır Makinesi": ["Profilo", "Electrolux", "Grundig"],
+ "Fırın": ["Profilo", "Simfer"],
+
+ "Televizyon": ["Samsung", "LG", "Philips", "Grundig"],
+
+ "Elektrikli Süpürge": ["Profilo", "Philips", "Miele", "Arnica", "Karcher"],
+
+ "Ankastre Fırın": ["Profilo"],
+ "Ankastre Mikrodalga Fırın": ["Profilo"],
+ "Ankastre Ocak": ["Profilo"],
+ "Ankastre Aspiratör / Davlumbaz": ["Profilo"],
+ "Ankastre Bulaşık Makinesi": ["Profilo"],
+ "Ankastre Setler": ["Profilo"],
+ "Ankastre Mikrodalga Fırın": ["Profilo"],
+
+ "Klima": ["Profilo", "Airfel", "Daikin", "Mitsubishi"],
+
+ "Su Sebili": ["Profilo"],
+ "Su Arıtma Cihazı": ["Profilo"],
+
+ "Aksesuarlar": ["Profilo"],
+ "Temizlik Bakım Ürünleri": ["Profilo"],
+
+ "Türk Kahve Makineleri": ["Profilo"],
+
+};
+
 export default function ProductFormModal({ show, editingProduct, onClose, onSuccess, onError }) {
  const [form, setForm] = useState({
   name: "",
@@ -91,12 +95,13 @@ export default function ProductFormModal({ show, editingProduct, onClose, onSucc
   category: "",
   subCategory: "",
   images: [],
-  sizes: [],
-  colorsText: "",
+  colors: [],
   stock: "",
   brand: "",
   material: "",
   tags: "",
+  serialNumber: "",
+  specifications: [],
   isNew: false,
   isFeatured: false,
  });
@@ -104,32 +109,61 @@ export default function ProductFormModal({ show, editingProduct, onClose, onSucc
  const [uploadingImage, setUploadingImage] = useState(false);
  const [imagePreview, setImagePreview] = useState([]);
  const [loading, setLoading] = useState(false);
+ const [isProductSpecsExpanded, setIsProductSpecsExpanded] = useState(true);
+ const [isColorsExpanded, setIsColorsExpanded] = useState(true);
 
  // Editing product veya show değiştiğinde formu doldur/temizle
  useEffect(() => {
   if (show && editingProduct) {
-   const colorNames = Array.isArray(editingProduct.colors)
-    ? editingProduct.colors
-     .map((c) => (typeof c === "string" ? c : (c?.name || "")))
-     .map((x) => String(x).trim())
-     .filter(Boolean)
-    : [];
+   let colors = [];
+   if (Array.isArray(editingProduct.colors) && editingProduct.colors.length > 0) {
+    if (typeof editingProduct.colors[0] === 'string') {
+     colors = editingProduct.colors.map((name, idx) => ({
+      name: name.trim(),
+      hexCode: inferHexCode(name),
+      price: editingProduct.price || 0,
+      discountPrice: editingProduct.discountPrice || null,
+      serialNumber: editingProduct.serialNumber ? `${editingProduct.serialNumber}-${idx + 1}` : "",
+      images: editingProduct.images || [],
+      stock: editingProduct.stock || 0,
+     }));
+    } else {
+     colors = editingProduct.colors.map(c => ({
+      name: c.name || "",
+      hexCode: c.hexCode || inferHexCode(c.name),
+      price: c.price || editingProduct.price || 0,
+      discountPrice: c.discountPrice !== undefined ? c.discountPrice : null,
+      serialNumber: c.serialNumber || "",
+      images: c.images || [],
+      stock: c.stock !== undefined ? c.stock : editingProduct.stock || 0,
+      specifications: c.specifications && Array.isArray(c.specifications) ? c.specifications : [],
+      manualLink: c.manualLink || "",
+     }));
+    }
+   }
+
+   // Renk bazlı stokların toplamını hesapla
+   const totalStock = colors.reduce((sum, color) => {
+    return sum + (parseInt(color.stock || 0) || 0);
+   }, 0);
+
    setForm({
-    name: editingProduct.name,
-    description: editingProduct.description,
-    price: editingProduct.price,
+    name: editingProduct.name || "",
+    description: editingProduct.description || "",
+    price: editingProduct.price || "",
     discountPrice: editingProduct.discountPrice || "",
-    category: editingProduct.category,
-    subCategory: editingProduct.subCategory,
-    images: editingProduct.images,
-    sizes: Array.isArray(editingProduct.sizes) ? editingProduct.sizes : (editingProduct.sizes ? editingProduct.sizes.split(",").map(s => s.trim()).filter(Boolean) : []),
-    colorsText: colorNames.join(", "),
-    stock: editingProduct.stock,
-    brand: editingProduct.brand,
-    material: editingProduct.material,
+    category: editingProduct.category || "",
+    subCategory: editingProduct.subCategory || "",
+    images: editingProduct.images || [],
+    colors: colors,
+    stock: totalStock, // Renk bazlı stokların toplamı
+    brand: editingProduct.brand || "",
+    material: editingProduct.material || "",
     tags: editingProduct.tags ? editingProduct.tags.join(", ") : "",
-    isNew: editingProduct.isNew,
-    isFeatured: editingProduct.isFeatured,
+    serialNumber: editingProduct.serialNumber ? String(editingProduct.serialNumber).trim() : "",
+    specifications: editingProduct.specifications && Array.isArray(editingProduct.specifications) ? editingProduct.specifications : [],
+    isNew: editingProduct.isNew || false,
+    isFeatured: editingProduct.isFeatured || false,
    });
    setImagePreview(editingProduct.images);
   } else if (!show) {
@@ -142,12 +176,13 @@ export default function ProductFormModal({ show, editingProduct, onClose, onSucc
     category: "",
     subCategory: "",
     images: [],
-    sizes: [],
-    colorsText: "",
+    colors: [],
     stock: "",
     brand: "",
     material: "",
     tags: "",
+    serialNumber: "",
+    specifications: [],
     isNew: false,
     isFeatured: false,
    });
@@ -155,14 +190,6 @@ export default function ProductFormModal({ show, editingProduct, onClose, onSucc
   }
  }, [editingProduct, show]);
 
- const toggleSize = (size) => {
-  const currentSizes = form.sizes || [];
-  if (currentSizes.includes(size)) {
-   setForm({ ...form, sizes: currentSizes.filter(s => s !== size) });
-  } else {
-   setForm({ ...form, sizes: [...currentSizes, size] });
-  }
- };
 
  const handleImageUpload = async (e) => {
   const file = e.target.files?.[0];
@@ -207,6 +234,231 @@ export default function ProductFormModal({ show, editingProduct, onClose, onSucc
   setImagePreview(prev => (prev || []).filter((_, i) => i !== idx));
  };
 
+ const addColor = () => {
+  setIsColorsExpanded(true);
+  setForm(prev => ({
+   ...prev,
+   colors: [...(prev.colors || []), {
+    name: "",
+    hexCode: "",
+    price: prev.price || "",
+    discountPrice: prev.discountPrice || "",
+    serialNumber: "",
+    images: [],
+    stock: prev.stock || "",
+    manualLink: "",
+    specifications: [],
+   }]
+  }));
+ };
+
+ const removeColor = (idx) => {
+  setForm(prev => ({
+   ...prev,
+   colors: (prev.colors || []).filter((_, i) => i !== idx)
+  }));
+ };
+
+ const updateColor = (idx, field, value) => {
+  setForm(prev => {
+   const newColors = [...(prev.colors || [])];
+   newColors[idx] = { ...newColors[idx], [field]: value };
+   return { ...prev, colors: newColors };
+  });
+ };
+
+ const handleColorImageUpload = async (e, colorIdx) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const color = form.colors[colorIdx];
+  if (!color) return;
+
+  const currentCount = (color.images || []).length;
+  if (currentCount >= MAX_IMAGES) {
+   if (onError) onError(`Maksimum ${MAX_IMAGES} görsel eklenebilir`);
+   return;
+  }
+
+  setUploadingImage(true);
+  try {
+   const formData = new FormData();
+   formData.append("file", file);
+   const res = await axiosInstance.post("/api/upload", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+   });
+   if (res.data?.url) {
+    const url = res.data.url;
+    updateColor(colorIdx, "images", [...(color.images || []), url]);
+   } else {
+    if (onError) onError("Görsel yüklenemedi");
+   }
+  } catch {
+   if (onError) onError("Görsel yüklenemedi");
+  } finally {
+   setUploadingImage(false);
+  }
+ };
+
+ const removeColorImage = (colorIdx, imgIdx) => {
+  const color = form.colors[colorIdx];
+  if (!color) return;
+  updateColor(colorIdx, "images", (color.images || []).filter((_, i) => i !== imgIdx));
+ };
+
+ // Specifications yönetimi (ürün seviyesi)
+ const addProductSpecificationCategory = () => {
+  setIsProductSpecsExpanded(true);
+  setForm(prev => ({
+   ...prev,
+   specifications: [...(prev.specifications || []), {
+    category: "",
+    items: []
+   }]
+  }));
+ };
+
+ const removeProductSpecificationCategory = (catIdx) => {
+  setForm(prev => ({
+   ...prev,
+   specifications: (prev.specifications || []).filter((_, i) => i !== catIdx)
+  }));
+ };
+
+ const updateProductSpecificationCategory = (catIdx, category) => {
+  setForm(prev => {
+   const newSpecs = [...(prev.specifications || [])];
+   if (newSpecs[catIdx]) {
+    newSpecs[catIdx] = {
+     ...newSpecs[catIdx],
+     category
+    };
+   }
+   return { ...prev, specifications: newSpecs };
+  });
+ };
+
+ const addProductSpecificationItem = (catIdx) => {
+  setForm(prev => {
+   const newSpecs = [...(prev.specifications || [])];
+   if (newSpecs[catIdx]) {
+    newSpecs[catIdx] = {
+     ...newSpecs[catIdx],
+     items: [...(newSpecs[catIdx].items || []), { key: "", value: "" }]
+    };
+   }
+   return { ...prev, specifications: newSpecs };
+  });
+ };
+
+ const removeProductSpecificationItem = (catIdx, itemIdx) => {
+  setForm(prev => {
+   const newSpecs = [...(prev.specifications || [])];
+   if (newSpecs[catIdx]) {
+    newSpecs[catIdx] = {
+     ...newSpecs[catIdx],
+     items: (newSpecs[catIdx].items || []).filter((_, i) => i !== itemIdx)
+    };
+   }
+   return { ...prev, specifications: newSpecs };
+  });
+ };
+
+ const updateProductSpecificationItem = (catIdx, itemIdx, field, value) => {
+  setForm(prev => {
+   const newSpecs = [...(prev.specifications || [])];
+   if (newSpecs[catIdx] && newSpecs[catIdx].items[itemIdx]) {
+    newSpecs[catIdx].items[itemIdx] = {
+     ...newSpecs[catIdx].items[itemIdx],
+     [field]: value
+    };
+   }
+   return { ...prev, specifications: newSpecs };
+  });
+ };
+
+ // Specifications yönetimi (renk bazlı)
+ const addSpecificationCategory = (colorIdx) => {
+  setForm(prev => {
+   const newColors = [...(prev.colors || [])];
+   if (newColors[colorIdx]) {
+    newColors[colorIdx] = {
+     ...newColors[colorIdx],
+     specifications: [...(newColors[colorIdx].specifications || []), {
+      category: "",
+      items: []
+     }]
+    };
+   }
+   return { ...prev, colors: newColors };
+  });
+ };
+
+ const removeSpecificationCategory = (colorIdx, catIdx) => {
+  setForm(prev => {
+   const newColors = [...(prev.colors || [])];
+   if (newColors[colorIdx]) {
+    newColors[colorIdx] = {
+     ...newColors[colorIdx],
+     specifications: (newColors[colorIdx].specifications || []).filter((_, i) => i !== catIdx)
+    };
+   }
+   return { ...prev, colors: newColors };
+  });
+ };
+
+ const updateSpecificationCategory = (colorIdx, catIdx, category) => {
+  setForm(prev => {
+   const newColors = [...(prev.colors || [])];
+   if (newColors[colorIdx] && newColors[colorIdx].specifications[catIdx]) {
+    newColors[colorIdx].specifications[catIdx] = {
+     ...newColors[colorIdx].specifications[catIdx],
+     category
+    };
+   }
+   return { ...prev, colors: newColors };
+  });
+ };
+
+ const addSpecificationItem = (colorIdx, catIdx) => {
+  setForm(prev => {
+   const newColors = [...(prev.colors || [])];
+   if (newColors[colorIdx] && newColors[colorIdx].specifications[catIdx]) {
+    newColors[colorIdx].specifications[catIdx] = {
+     ...newColors[colorIdx].specifications[catIdx],
+     items: [...(newColors[colorIdx].specifications[catIdx].items || []), { key: "", value: "" }]
+    };
+   }
+   return { ...prev, colors: newColors };
+  });
+ };
+
+ const removeSpecificationItem = (colorIdx, catIdx, itemIdx) => {
+  setForm(prev => {
+   const newColors = [...(prev.colors || [])];
+   if (newColors[colorIdx] && newColors[colorIdx].specifications[catIdx]) {
+    newColors[colorIdx].specifications[catIdx] = {
+     ...newColors[colorIdx].specifications[catIdx],
+     items: (newColors[colorIdx].specifications[catIdx].items || []).filter((_, i) => i !== itemIdx)
+    };
+   }
+   return { ...prev, colors: newColors };
+  });
+ };
+
+ const updateSpecificationItem = (colorIdx, catIdx, itemIdx, field, value) => {
+  setForm(prev => {
+   const newColors = [...(prev.colors || [])];
+   if (newColors[colorIdx] && newColors[colorIdx].specifications[catIdx] && newColors[colorIdx].specifications[catIdx].items[itemIdx]) {
+    newColors[colorIdx].specifications[catIdx].items[itemIdx] = {
+     ...newColors[colorIdx].specifications[catIdx].items[itemIdx],
+     [field]: value
+    };
+   }
+   return { ...prev, colors: newColors };
+  });
+ };
+
  const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
@@ -231,13 +483,6 @@ export default function ProductFormModal({ show, editingProduct, onClose, onSucc
    return;
   }
 
-  const stockValue = parseInt(form.stock);
-  if (isNaN(stockValue) || stockValue < 0) {
-   if (onError) onError("Stok değeri en az 0 olmalıdır!");
-   setLoading(false);
-   return;
-  }
-
   const priceValue = parseFloat(form.price);
   const discountPriceValue = form.discountPrice ? parseFloat(form.discountPrice) : null;
   if (isNaN(priceValue) || priceValue <= 0) {
@@ -251,21 +496,85 @@ export default function ProductFormModal({ show, editingProduct, onClose, onSucc
    return;
   }
 
+  // Renk validasyonu
+  if (!form.colors || form.colors.length === 0) {
+   if (onError) onError("En az bir renk eklemelisiniz!");
+   setLoading(false);
+   return;
+  }
+
+  for (let i = 0; i < form.colors.length; i++) {
+   const color = form.colors[i];
+   if (!color.name || !color.name.trim()) {
+    if (onError) onError(`${i + 1}. rengin adı boş olamaz!`);
+    setLoading(false);
+    return;
+   }
+   if (!color.price || isNaN(parseFloat(color.price)) || parseFloat(color.price) <= 0) {
+    if (onError) onError(`${color.name} rengi için geçerli bir fiyat girmelisiniz!`);
+    setLoading(false);
+    return;
+   }
+   if (!color.serialNumber || !color.serialNumber.trim()) {
+    if (onError) onError(`${color.name} rengi için seri numarası girmelisiniz!`);
+    setLoading(false);
+    return;
+   }
+   if (!color.images || color.images.length === 0) {
+    if (onError) onError(`${color.name} rengi için en az bir resim eklemelisiniz!`);
+    setLoading(false);
+    return;
+   }
+   // Renk bazlı stok validasyonu
+   const colorStock = parseInt(color.stock || 0);
+   if (isNaN(colorStock) || colorStock < 0) {
+    if (onError) onError(`${color.name} rengi için stok değeri geçerli bir sayı olmalıdır!`);
+    setLoading(false);
+    return;
+   }
+  }
+
   try {
-   const normalizedColors = String(form.colorsText || "")
-    .split(/[,\n;:]+/g)
-    .map((x) => x.trim())
-    .filter(Boolean);
+   // Renk bazlı stokların toplamını hesapla
+   const totalStock = form.colors.reduce((sum, color) => {
+    return sum + (parseInt(color.stock || 0) || 0);
+   }, 0);
 
    const payload = {
     ...form,
     price: Number(priceValue),
     discountPrice: discountPriceValue !== null ? Number(discountPriceValue) : undefined,
-    stock: Number(stockValue),
+    stock: totalStock,
     tags: form.tags ? form.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
-    colors: normalizedColors.map((name) => ({ name, hexCode: inferHexCode(name) })),
+    specifications: (form.specifications || []).filter(spec =>
+     spec.category && spec.category.trim() && spec.items && spec.items.length > 0
+    ).map(spec => ({
+     category: spec.category.trim(),
+     items: spec.items.filter(item => item.key && item.key.trim() && item.value && item.value.trim()).map(item => ({
+      key: item.key.trim(),
+      value: item.value.trim()
+     }))
+    })).filter(spec => spec.items.length > 0),
+    colors: form.colors.map(c => ({
+     name: c.name.trim(),
+     hexCode: c.hexCode || inferHexCode(c.name),
+     price: Number(parseFloat(c.price)),
+     discountPrice: c.discountPrice && !isNaN(parseFloat(c.discountPrice)) ? Number(parseFloat(c.discountPrice)) : null,
+     serialNumber: c.serialNumber.trim(),
+     images: c.images || [],
+     stock: c.stock ? Number(parseInt(c.stock)) : 0,
+     manualLink: c.manualLink ? String(c.manualLink).trim() : "",
+     specifications: (c.specifications || []).filter(spec =>
+      spec.category && spec.category.trim() && spec.items && spec.items.length > 0
+     ).map(spec => ({
+      category: spec.category.trim(),
+      items: spec.items.filter(item => item.key && item.key.trim() && item.value && item.value.trim()).map(item => ({
+       key: item.key.trim(),
+       value: item.value.trim()
+      }))
+     })).filter(spec => spec.items.length > 0),
+    })),
    };
-   delete payload.colorsText;
 
    let res;
    if (editingProduct?._id) {
@@ -294,6 +603,17 @@ export default function ProductFormModal({ show, editingProduct, onClose, onSucc
 
  return (
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+   <style dangerouslySetInnerHTML={{
+    __html: `
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+     -webkit-appearance: none;
+     margin: 0;
+    }
+    input[type="number"] {
+     -moz-appearance: textfield;
+    }
+   `}} />
    <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
     <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
      <h3 className="text-xl font-bold">{editingProduct ? "Ürün Düzenle" : "Yeni Ürün Ekle"}</h3>
@@ -323,18 +643,43 @@ export default function ProductFormModal({ show, editingProduct, onClose, onSucc
        />
       </div>
       <div>
-       <div className="flex items-center justify-between gap-3 mb-2">
-        <label className="block text-sm font-semibold text-gray-700">Marka</label>
-        <span className={`text-xs ${String(form.brand || "").length > MAX_BRAND ? "text-red-600 font-semibold" : "text-gray-500"}`}>
-         {String(form.brand || "").length}/{MAX_BRAND}
-        </span>
-       </div>
-       <input
-        value={form.brand}
-        onChange={(e) => setForm({ ...form, brand: e.target.value })}
-        className="w-full border rounded-lg px-4 py-3"
-        maxLength={MAX_BRAND}
-       />
+       <label className="block text-sm font-semibold text-gray-700 mb-2">Marka</label>
+       {(() => {
+        // Önce alt kategoriye göre, yoksa kategoriye göre markaları belirle
+        const availableBrands = categoryBrands[form.subCategory] || categoryBrands[form.category] || [];
+
+        if (availableBrands.length > 0) {
+         return (
+          <select
+           value={form.brand}
+           onChange={(e) => setForm({ ...form, brand: e.target.value })}
+           className="w-full border rounded-lg pl-4 pr-10 py-3 cursor-pointer appearance-none bg-white"
+           style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 0.75rem center',
+            backgroundSize: '12px'
+           }}
+          >
+           <option value="">Seçiniz</option>
+           {availableBrands.map((brand) => (
+            <option key={brand} value={brand}>{brand}</option>
+           ))}
+          </select>
+         );
+        }
+
+        // Eğer kategori için marka listesi yoksa, serbest metin girişi
+        return (
+         <input
+          value={form.brand}
+          onChange={(e) => setForm({ ...form, brand: e.target.value })}
+          className="w-full border rounded-lg px-4 py-3"
+          maxLength={MAX_BRAND}
+          placeholder="Marka adı"
+         />
+        );
+       })()}
       </div>
      </div>
 
@@ -354,78 +699,29 @@ export default function ProductFormModal({ show, editingProduct, onClose, onSucc
       />
      </div>
 
-     <div className="grid md:grid-cols-3 gap-4">
-      <div>
-       <label className="block text-sm font-semibold text-gray-700 mb-2">Fiyat (₺)</label>
-       <input
-        type="text"
-        inputMode="decimal"
-        value={form.price}
-        onChange={(e) => {
-         const value = e.target.value;
-         if (value === '' || /^\d*\.?\d*$/.test(value)) {
-          setForm({ ...form, price: value });
-         }
-        }}
-        onKeyDown={(e) => {
-         if (!/[0-9.]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.key)) {
-          e.preventDefault();
-         }
-        }}
-        className="w-full border rounded-lg px-4 py-3"
-        required
-       />
-      </div>
-      <div>
-       <label className="block text-sm font-semibold text-gray-700 mb-2">İndirimli Fiyat (₺)</label>
-       <input
-        type="text"
-        inputMode="decimal"
-        value={form.discountPrice}
-        onChange={(e) => {
-         const value = e.target.value;
-         if (value === '' || /^\d*\.?\d*$/.test(value)) {
-          setForm({ ...form, discountPrice: value });
-         }
-        }}
-        onKeyDown={(e) => {
-         if (!/[0-9.]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.key)) {
-          e.preventDefault();
-         }
-        }}
-        className="w-full border rounded-lg px-4 py-3"
-       />
-      </div>
-      <div>
-       <label className="block text-sm font-semibold text-gray-700 mb-2">Stok</label>
-       <input
-        type="text"
-        inputMode="numeric"
-        value={form.stock}
-        onChange={(e) => {
-         const value = e.target.value;
-         if (value === '' || /^\d+$/.test(value)) {
-          setForm({ ...form, stock: value });
-         }
-        }}
-        onKeyDown={(e) => {
-         if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.key)) {
-          e.preventDefault();
-         }
-        }}
-        className="w-full border rounded-lg px-4 py-3"
-        required
-       />
-      </div>
-     </div>
-
-     <div className="grid md:grid-cols-2 gap-4">
+     <div className={`grid gap-4 ${(subCategoryOptions[form.category] || []).length > 0 ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}>
       <div>
        <label className="block text-sm font-semibold text-gray-700 mb-2">Kategori</label>
        <select
         value={form.category}
-        onChange={(e) => setForm({ ...form, category: e.target.value, subCategory: "" })}
-        className="w-full border rounded-lg px-4 py-3 cursor-pointer"
+        onChange={(e) => {
+         const newCategory = e.target.value;
+         const availableBrands = categoryBrands[newCategory] || [];
+         const shouldResetBrand = form.brand && availableBrands.length > 0 && !availableBrands.includes(form.brand);
+         setForm({
+          ...form,
+          category: newCategory,
+          subCategory: "",
+          brand: shouldResetBrand ? "" : form.brand
+         });
+        }}
+        className="w-full border rounded-lg pl-4 pr-10 py-3 cursor-pointer appearance-none bg-white"
+        style={{
+         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+         backgroundRepeat: 'no-repeat',
+         backgroundPosition: 'right 0.75rem center',
+         backgroundSize: '12px'
+        }}
         required
        >
         <option value="">Seçiniz</option>
@@ -434,112 +730,367 @@ export default function ProductFormModal({ show, editingProduct, onClose, onSucc
         ))}
        </select>
       </div>
-      <div>
-       <label className="block text-sm font-semibold text-gray-700 mb-2">Alt Kategori</label>
-       <select
-        value={form.subCategory}
-        onChange={(e) => setForm({ ...form, subCategory: e.target.value })}
-        className="w-full border rounded-lg px-4 py-3 cursor-pointer"
-       >
-        <option value="">Seçiniz</option>
-        {(subCategoryOptions[form.category] || []).map((sc) => (
-         <option key={sc} value={sc}>{sc}</option>
-        ))}
-       </select>
-      </div>
-     </div>
-
-     <div>
-      <p className="block text-sm font-semibold text-gray-700 mb-2">Görseller {" "}
-       <span className="text-sm text-gray-700">({(form.images || []).length} görsel)</span>
-      </p>
-
-      <div className="mt-4 flex items-center gap-3">
-       {(() => {
-        const isMaxed = (form.images || []).length >= MAX_IMAGES;
-        const disabled = uploadingImage || isMaxed;
-        return (
-         <label
-          title={isMaxed ? `Maksimum ${MAX_IMAGES} görsel eklenebilir` : "Görsel Yükle"}
-          className={`shrink-0 self-center inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition ${disabled ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"}`}
-         >
-          <HiUpload size={16} />
-          <input type="file" className="hidden" onChange={handleImageUpload} disabled={disabled} />
-         </label>
-        );
-       })()}
-
-       <div className="flex-1">
-        {(imagePreview || []).length > 0 ? (
-         <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-          {imagePreview.map((src, idx) => (
-           <div key={idx} className="relative group">
-            <Image src={src} alt="preview" width={120} height={120} className="w-full h-24 object-cover rounded-lg" />
-            <button
-             type="button"
-             onClick={() => removeImage(idx)}
-             className="absolute top-2 right-2 bg-black/70 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
-             title="Kaldır"
-            >
-             <HiX size={16} />
-            </button>
-           </div>
-          ))}
-         </div>
-        ) : (
-         <div className="text-sm text-gray-500">Henüz görsel eklenmedi.</div>
-        )}
+      {(subCategoryOptions[form.category] || []).length > 0 && (
+       <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Alt Kategori</label>
+        <select
+         value={form.subCategory}
+         onChange={(e) => {
+          const newSubCategory = e.target.value;
+          const availableBrands = categoryBrands[newSubCategory] || categoryBrands[form.category] || [];
+          const shouldResetBrand = form.brand && availableBrands.length > 0 && !availableBrands.includes(form.brand);
+          setForm({
+           ...form,
+           subCategory: newSubCategory,
+           brand: shouldResetBrand ? "" : form.brand
+          });
+         }}
+         className="w-full border rounded-lg pl-4 pr-10 py-3 cursor-pointer appearance-none bg-white"
+         style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'right 0.75rem center',
+          backgroundSize: '12px'
+         }}
+        >
+         <option value="">Seçiniz</option>
+         {(subCategoryOptions[form.category] || []).map((sc) => (
+          <option key={sc} value={sc}>{sc}</option>
+         ))}
+        </select>
        </div>
-      </div>
+      )}
      </div>
 
      <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-2">Bedenler</label>
-      <div className="flex flex-wrap gap-2">
-       {getAvailableSizes(form.category).map((size) => {
-        const selected = (form.sizes || []).includes(size);
-        return (
-         <button
-          type="button"
-          key={size}
-          onClick={() => toggleSize(size)}
-          className={`px-3 py-2 rounded-lg text-sm font-semibold border transition cursor-pointer ${selected ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-gray-700 border-gray-300 hover:border-indigo-400"}`}
-         >
-          {size}
-         </button>
-        );
-       })}
-      </div>
+      <label className="block text-sm font-semibold text-gray-700 mb-2">Etiketler (virgülle)</label>
+      <input
+       value={form.tags}
+       onChange={(e) => setForm({ ...form, tags: e.target.value })}
+       className="w-full border rounded-lg px-4 py-3"
+      />
      </div>
 
-     <div className="grid md:grid-cols-2 gap-4">
-      <div>
-       <label className="block text-sm font-semibold text-gray-700 mb-2">Renkler (virgülle)</label>
-       <input
-        value={form.colorsText || ""}
-        onChange={(e) => {
-         const value = e.target.value;
-         if (!/[0-9]/.test(value)) {
-          setForm({ ...form, colorsText: value });
-         }
-        }}
-        onKeyDown={(e) => {
-         if (/[0-9]/.test(e.key)) {
-          e.preventDefault();
-         }
-        }}
-        className="w-full border rounded-lg px-4 py-3"
-        placeholder="mavi, kırmızı, siyah (veya mavi:kırmızı)"
-       />
+     <div>
+      <div className="flex justify-between items-center mb-4">
+       <button
+        type="button"
+        onClick={() => setIsProductSpecsExpanded(!isProductSpecsExpanded)}
+        className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition"
+       >
+        <span>Ürün Özellikleri</span>
+        {isProductSpecsExpanded ? (
+         <HiChevronUp className="text-gray-500" size={18} />
+        ) : (
+         <HiChevronDown className="text-gray-500" size={18} />
+        )}
+       </button>
+       <button
+        type="button"
+        onClick={addProductSpecificationCategory}
+        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition"
+       >
+        + Kategori Ekle
+       </button>
       </div>
-      <div>
-       <label className="block text-sm font-semibold text-gray-700 mb-2">Etiketler (virgülle)</label>
-       <input
-        value={form.tags}
-        onChange={(e) => setForm({ ...form, tags: e.target.value })}
-        className="w-full border rounded-lg px-4 py-3"
-       />
+
+      {isProductSpecsExpanded && form.specifications && form.specifications.length > 0 && (
+       <div className="space-y-3 mb-6">
+        {form.specifications.map((spec, catIdx) => (
+         <div key={catIdx} className="border border-gray-200 rounded-lg p-3 bg-white">
+          <div className="flex items-center gap-2 mb-2">
+           <input
+            type="text"
+            value={spec.category || ""}
+            onChange={(e) => updateProductSpecificationCategory(catIdx, e.target.value)}
+            placeholder="Kategori adı (örn: Genel Özellikler)"
+            className="flex-1 border rounded-lg px-2 py-1.5 text-xs font-semibold"
+           />
+           <button
+            type="button"
+            onClick={() => removeProductSpecificationCategory(catIdx)}
+            className="px-2 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-xs"
+           >
+            Sil
+           </button>
+          </div>
+
+          <div className="space-y-2">
+           {spec.items && spec.items.map((item, itemIdx) => (
+            <div key={itemIdx} className="flex items-center gap-2">
+             <input
+              type="text"
+              value={item.key || ""}
+              onChange={(e) => updateProductSpecificationItem(catIdx, itemIdx, "key", e.target.value)}
+              placeholder="Özellik adı"
+              className="flex-1 border rounded-lg px-2 py-1.5 text-xs"
+             />
+             <input
+              type="text"
+              value={item.value || ""}
+              onChange={(e) => updateProductSpecificationItem(catIdx, itemIdx, "value", e.target.value)}
+              placeholder="Değer"
+              className="flex-1 border rounded-lg px-2 py-1.5 text-xs"
+             />
+             <button
+              type="button"
+              onClick={() => removeProductSpecificationItem(catIdx, itemIdx)}
+              className="px-2 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-xs"
+             >
+              ×
+             </button>
+            </div>
+           ))}
+           <button
+            type="button"
+            onClick={() => addProductSpecificationItem(catIdx)}
+            className="w-full px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-xs font-semibold"
+           >
+            + Özellik Ekle
+           </button>
+          </div>
+         </div>
+        ))}
+       </div>
+      )}
+     </div>
+
+     <div>
+      <div className="flex justify-between items-center mb-4">
+       <button
+        type="button"
+        onClick={() => setIsColorsExpanded(!isColorsExpanded)}
+        className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition"
+       >
+        <span>Renkler</span>
+        {isColorsExpanded ? (
+         <HiChevronUp className="text-gray-500" size={18} />
+        ) : (
+         <HiChevronDown className="text-gray-500" size={18} />
+        )}
+       </button>
+       <button
+        type="button"
+        onClick={addColor}
+        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition"
+       >
+        + Renk Ekle
+       </button>
       </div>
+
+      {isColorsExpanded && (
+       <div className="space-y-4">
+        {(form.colors || []).map((color, colorIdx) => (
+         <div key={colorIdx} className="border rounded-lg p-4 bg-gray-50">
+          <div className="flex justify-between items-center mb-4">
+           <h4 className="font-semibold text-gray-700">Renk {colorIdx + 1}</h4>
+           <button
+            type="button"
+            onClick={() => removeColor(colorIdx)}
+            className="text-red-600 hover:text-red-800 text-sm font-semibold"
+           >
+            Sil
+           </button>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 mb-4">
+           <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Renk Adı *</label>
+            <input
+             type="text"
+             value={color.name || ""}
+             onChange={(e) => {
+              const name = e.target.value;
+              updateColor(colorIdx, "name", name);
+              updateColor(colorIdx, "hexCode", inferHexCode(name));
+             }}
+             className="w-full border rounded-lg px-4 py-2"
+             placeholder="Örn: Beyaz, Paslanmaz çelik"
+             required
+            />
+           </div>
+           <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Seri Numarası *</label>
+            <input
+             type="text"
+             value={color.serialNumber || ""}
+             onChange={(e) => updateColor(colorIdx, "serialNumber", e.target.value)}
+             className="w-full border rounded-lg px-4 py-2"
+             placeholder="Örn: BD2086WDAN-W"
+             required
+            />
+           </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4 mb-4">
+           <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Fiyat *</label>
+            <input
+             type="number"
+             step="0.01"
+             min="0"
+             value={color.price || ""}
+             onChange={(e) => updateColor(colorIdx, "price", e.target.value)}
+             className="w-full border rounded-lg px-4 py-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+             placeholder="0.00"
+             required
+            />
+           </div>
+           <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">İndirimli Fiyat</label>
+            <input
+             type="number"
+             step="0.01"
+             min="0"
+             value={color.discountPrice || ""}
+             onChange={(e) => updateColor(colorIdx, "discountPrice", e.target.value || null)}
+             className="w-full border rounded-lg px-4 py-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+             placeholder="Opsiyonel"
+            />
+           </div>
+           <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Stok</label>
+            <input
+             type="number"
+             min="0"
+             value={color.stock || ""}
+             onChange={(e) => updateColor(colorIdx, "stock", e.target.value)}
+             className="w-full border rounded-lg px-4 py-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+             placeholder="0"
+            />
+           </div>
+          </div>
+
+          <div className="mb-4">
+           <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Görseller * ({(color.images || []).length}/{MAX_IMAGES})
+           </label>
+           <div className="flex items-center gap-3 mb-3">
+            <label
+             className={`shrink-0 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition ${(color.images || []).length >= MAX_IMAGES || uploadingImage ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"}`}
+            >
+             <HiUpload size={16} />
+             <input
+              type="file"
+              className="hidden"
+              onChange={(e) => handleColorImageUpload(e, colorIdx)}
+              disabled={(color.images || []).length >= MAX_IMAGES || uploadingImage}
+             />
+             Görsel Ekle
+            </label>
+           </div>
+           {(color.images || []).length > 0 && (
+            <div className="grid grid-cols-5 gap-3">
+             {(color.images || []).map((img, imgIdx) => (
+              <div key={imgIdx} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
+               <Image
+                src={img}
+                alt={`Renk ${colorIdx + 1} - Görsel ${imgIdx + 1}`}
+                width={100}
+                height={100}
+                className="w-full h-full object-cover"
+               />
+               <button
+                type="button"
+                onClick={() => removeColorImage(colorIdx, imgIdx)}
+                className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
+               >
+                <HiX size={14} />
+               </button>
+              </div>
+             ))}
+            </div>
+           )}
+
+           <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Kullanım Kılavuzu Linki</label>
+            <input
+             type="url"
+             value={color.manualLink || ""}
+             onChange={(e) => updateColor(colorIdx, "manualLink", e.target.value.trim())}
+             className="w-full border rounded-lg px-4 py-2"
+             placeholder="https://example.com/kullanim-kilavuzu.pdf"
+            />
+           </div>
+
+           {/* Renk Bazlı Özellikler */}
+           <div className="mt-4 pt-4 border-t border-gray-300">
+            <div className="flex items-center justify-between mb-3">
+             <label className="block text-sm font-semibold text-gray-700">Ürün Özellikleri ({color.name || `Renk ${colorIdx + 1}`})</label>
+             <button
+              type="button"
+              onClick={() => addSpecificationCategory(colorIdx)}
+              className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-semibold"
+             >
+              + Kategori Ekle
+             </button>
+            </div>
+
+            {color.specifications && color.specifications.length > 0 && (
+             <div className="space-y-3">
+              {color.specifications.map((spec, catIdx) => (
+               <div key={catIdx} className="border border-gray-200 rounded-lg p-3 bg-white">
+                <div className="flex items-center gap-2 mb-2">
+                 <input
+                  type="text"
+                  value={spec.category || ""}
+                  onChange={(e) => updateSpecificationCategory(colorIdx, catIdx, e.target.value)}
+                  placeholder="Kategori adı (örn: Genel Özellikler)"
+                  className="flex-1 border rounded-lg px-2 py-1.5 text-xs font-semibold"
+                 />
+                 <button
+                  type="button"
+                  onClick={() => removeSpecificationCategory(colorIdx, catIdx)}
+                  className="px-2 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-xs"
+                 >
+                  Sil
+                 </button>
+                </div>
+
+                <div className="space-y-2">
+                 {spec.items && spec.items.map((item, itemIdx) => (
+                  <div key={itemIdx} className="flex items-center gap-2">
+                   <input
+                    type="text"
+                    value={item.key || ""}
+                    onChange={(e) => updateSpecificationItem(colorIdx, catIdx, itemIdx, "key", e.target.value)}
+                    placeholder="Özellik adı"
+                    className="flex-1 border rounded-lg px-2 py-1.5 text-xs"
+                   />
+                   <input
+                    type="text"
+                    value={item.value || ""}
+                    onChange={(e) => updateSpecificationItem(colorIdx, catIdx, itemIdx, "value", e.target.value)}
+                    placeholder="Değer"
+                    className="flex-1 border rounded-lg px-2 py-1.5 text-xs"
+                   />
+                   <button
+                    type="button"
+                    onClick={() => removeSpecificationItem(colorIdx, catIdx, itemIdx)}
+                    className="px-2 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-xs"
+                   >
+                    ×
+                   </button>
+                  </div>
+                 ))}
+                 <button
+                  type="button"
+                  onClick={() => addSpecificationItem(colorIdx, catIdx)}
+                  className="w-full px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-xs font-semibold"
+                 >
+                  + Özellik Ekle
+                 </button>
+                </div>
+               </div>
+              ))}
+             </div>
+            )}
+           </div>
+          </div>
+         </div>
+        ))}
+       </div>
+      )}
      </div>
 
      <div className="flex items-center gap-4">

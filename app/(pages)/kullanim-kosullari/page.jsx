@@ -21,7 +21,7 @@ export default function KullanimKosullariPage() {
      >
       <>
        <p className="leading-relaxed">
-        Bu web sitesi SHOP.CO tarafından işletilmektedir. Web sitemizi kullanarak:
+        Bu web sitesi PROFILO tarafından işletilmektedir. Web sitemizi kullanarak:
        </p>
        <ul className="list-disc list-inside space-y-2 ml-4">
         <li>18 yaşında veya daha büyük olduğunuzu onaylarsınız</li>
@@ -104,7 +104,7 @@ export default function KullanimKosullariPage() {
        <ul className="list-disc list-inside space-y-2 ml-4">
         <li>Telif hakkı ve diğer fikri mülkiyet haklarıyla korunmaktadır</li>
         <li>İçerikleri izinsiz kopyalamak, dağıtmak veya kullanmak yasaktır</li>
-        <li>Logo, marka ve tasarımlar SHOP.CO&apos;ya aittir</li>
+        <li>Logo, marka ve tasarımlar PROFILO&apos;ya aittir</li>
         <li>Ürün görselleri ve açıklamaları ticari amaçla kullanılamaz</li>
        </ul>
       </>
@@ -133,7 +133,7 @@ export default function KullanimKosullariPage() {
      <PolicySection title="Sorumluluk Reddi">
       <>
        <p className="leading-relaxed">
-        SHOP.CO olarak:
+        PROFILO olarak:
        </p>
        <ul className="list-disc list-inside space-y-2 ml-4">
         <li>Web sitesinin kesintisiz çalışmasını garanti edemeyiz</li>

@@ -3,15 +3,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { HiPlus, HiMinus } from "react-icons/hi";
 import { MdDelete } from "react-icons/md";
+import { getProductUrl } from "@/app/utils/productUrl";
 
 export default function CartItemCard({ item, onUpdateQuantity, onRemove }) {
  const hasDiscount = item.discountPrice && item.discountPrice < item.price;
  const itemPrice = hasDiscount ? item.discountPrice : item.price;
  const itemTotal = itemPrice * item.quantity;
 
+ const productUrl = getProductUrl(item, item.serialNumber);
+
  return (
   <div className="bg-white rounded-xl shadow-sm p-4 flex gap-4">
-   <Link href={`/urun/${item.slug}`} className="shrink-0">
+   <Link href={productUrl} className="shrink-0">
     <Image
      width={500}
      height={500}
@@ -22,25 +25,28 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemove }) {
    </Link>
 
    <div className="flex-1">
-    <Link href={`/urun/${item.slug}`}>
+    <Link href={productUrl}>
      <h3 className="font-bold text-gray-800 hover:text-indigo-600 transition">
       {item.name}
      </h3>
     </Link>
 
     {item.brand && (
-     <p className="text-xs text-gray-500 mb-2">{item.brand}</p>
+     <p className="text-xs text-gray-500 mb-2">
+      {item.brand}
+     </p>
     )}
 
     <div className="flex flex-wrap gap-3 text-sm mb-3">
-     {item.selectedSize && (
-      <span className="text-gray-600">
-       Beden: <span className="font-semibold">{item.selectedSize}</span>
-      </span>
-     )}
      {item.selectedColor && (
       <span className="text-gray-600">
-       Renk: <span className="font-semibold">{item.selectedColor}</span>
+       <span className="font-bold">Renk:</span> {item.selectedColor}
+      </span>
+     )}
+     {item.serialNumber && (
+      <span className="text-gray-600">
+       {item.selectedColor ? " - " : ""}
+       <span className="font-bold">Seri No:</span> <span className="font-mono">{item.serialNumber}</span>
       </span>
      )}
     </div>

@@ -11,11 +11,10 @@ import ProductRating from "@/app/components/product/ProductRating";
 import ProductPrice from "@/app/components/product/ProductPrice";
 import ProductStockStatus from "@/app/components/product/ProductStockStatus";
 import ProductColorSelector from "@/app/components/product/ProductColorSelector";
-import ProductSizeSelector from "@/app/components/product/ProductSizeSelector";
 import ProductQuantitySelector from "@/app/components/product/ProductQuantitySelector";
 import ProductActions from "@/app/components/product/ProductActions";
 import ProductFeatures from "@/app/components/product/ProductFeatures";
-import ProductDetails from "@/app/components/product/ProductDetails";
+import ProductAllFeatures from "@/app/components/product/ProductAllFeatures";
 
 export default function UrunDetayPage() {
  const params = useParams();
@@ -26,8 +25,8 @@ export default function UrunDetayPage() {
  const [product, setProduct] = useState(null);
  const [loading, setLoading] = useState(true);
  const [selectedImage, setSelectedImage] = useState(0);
- const [selectedSize, setSelectedSize] = useState(null);
  const [selectedColor, setSelectedColor] = useState(null);
+ const [selectedColorObj, setSelectedColorObj] = useState(null);
  const [quantity, setQuantity] = useState(1);
  const [addedToCart, setAddedToCart] = useState(false);
  const [canRate, setCanRate] = useState(false);
@@ -48,18 +47,32 @@ export default function UrunDetayPage() {
  const fetchProduct = async () => {
   setLoading(true);
   try {
-   const res = await fetch("/api/products?limit=100");
+   const res = await fetch("/api/products?limit=1000");
    const data = await res.json();
 
    if (data.success) {
     const foundProduct = data.data.find((p) => p.slug === slug);
     if (foundProduct) {
-     setProduct(foundProduct);
-     if (foundProduct.sizes && foundProduct.sizes.length > 0) {
-      setSelectedSize(foundProduct.sizes[0]);
+     // Yeni URL formatına yönlendir
+     const { getProductUrl } = await import("@/app/utils/productUrl");
+     const firstColor = foundProduct.colors && foundProduct.colors.length > 0 && typeof foundProduct.colors[0] === 'object'
+      ? foundProduct.colors[0]
+      : null;
+     const serialNumber = firstColor?.serialNumber || foundProduct.serialNumber;
+     const newUrl = getProductUrl(foundProduct, serialNumber);
+
+     // Eğer yeni URL farklıysa yönlendir
+     if (newUrl !== `/urun/${slug}`) {
+      window.location.href = newUrl;
+      return;
      }
+
+     setProduct(foundProduct);
      if (foundProduct.colors && foundProduct.colors.length > 0) {
-      setSelectedColor(foundProduct.colors[0].name);
+      const firstColorObj = typeof foundProduct.colors[0] === 'object' ? foundProduct.colors[0] : { name: foundProduct.colors[0] };
+      setSelectedColor(firstColorObj.name);
+      setSelectedColorObj(firstColorObj);
+      setSelectedImage(0);
      }
      checkCanRate(foundProduct._id);
     }
@@ -127,13 +140,9 @@ export default function UrunDetayPage() {
  const handleAddToCart = () => {
   if (!product) return;
 
-  if (product.stock === 0) {
+  const stockToCheck = colorStock !== undefined ? colorStock : product.stock;
+  if (stockToCheck === 0) {
    setToast({ show: true, message: "Bu ürün stokta bulunmamaktadır.", type: "error" });
-   return;
-  }
-
-  if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-   setToast({ show: true, message: "Lütfen bir beden seçin", type: "error" });
    return;
   }
 
@@ -143,7 +152,17 @@ export default function UrunDetayPage() {
    return;
   }
 
-  addToCart(product, selectedSize, selectedColor, quantity);
+  // Renk bazlı ürün bilgileriyle sepet ekle
+  const productToAdd = {
+   ...product,
+   price: colorPrice,
+   discountPrice: colorDiscountPrice,
+   serialNumber: colorSerialNumber,
+   images: colorImages,
+   stock: stockToCheck,
+  };
+
+  addToCart(productToAdd, null, selectedColor, quantity);
   setAddedToCart(true);
   setTimeout(() => setAddedToCart(false), 2000);
  };
@@ -166,11 +185,40 @@ export default function UrunDetayPage() {
   return <ProductNotFound />;
  }
 
- const hasDiscount = product.discountPrice && product.discountPrice < product.price;
- const displayPrice = hasDiscount ? product.discountPrice : product.price;
+ // Seçili renk objesini bul
+ const currentColorObj = selectedColorObj || (product.colors && product.colors.length > 0
+  ? (typeof product.colors[0] === 'object' ? product.colors[0] : null)
+  : null);
+
+ // Renk bazlı fiyat, resim ve seri numarası
+ const colorPrice = currentColorObj?.price || product.price;
+ const colorDiscountPrice = currentColorObj?.discountPrice !== undefined ? currentColorObj.discountPrice : product.discountPrice;
+ const colorImages = currentColorObj?.images && currentColorObj.images.length > 0 ? currentColorObj.images : product.images;
+ const colorSerialNumber = currentColorObj?.serialNumber || product.serialNumber;
+ const colorStock = currentColorObj?.stock !== undefined ? currentColorObj.stock : product.stock;
+
+ const hasDiscount = colorDiscountPrice && colorDiscountPrice < colorPrice;
+ const displayPrice = hasDiscount ? colorDiscountPrice : colorPrice;
  const discountPercentage = hasDiscount
-  ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
+  ? Math.round(((colorPrice - colorDiscountPrice) / colorPrice) * 100)
   : 0;
+
+ // Renk değiştiğinde resimleri ve fiyatı güncelle
+ const handleColorSelect = (colorName) => {
+  setSelectedColor(colorName);
+  const color = product.colors.find(c => {
+   if (typeof c === 'object') {
+    return c.name === colorName;
+   }
+   return c === colorName;
+  });
+  if (color && typeof color === 'object') {
+   setSelectedColorObj(color);
+   setSelectedImage(0);
+  } else {
+   setSelectedColorObj(null);
+  }
+ };
 
  return (
   <div className="min-h-screen bg-gray-50 py-12">
@@ -181,7 +229,7 @@ export default function UrunDetayPage() {
 
     <div className="grid lg:grid-cols-2 gap-12">
      <ProductImageGallery
-      images={product.images}
+      images={colorImages}
       selectedImage={selectedImage}
       onImageSelect={setSelectedImage}
       isNew={product.isNew}
@@ -193,6 +241,14 @@ export default function UrunDetayPage() {
       {product.brand && (
        <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">
         {product.brand}
+        {colorSerialNumber && (
+         <span className="ml-2 font-mono text-gray-600 normal-case">- {colorSerialNumber}</span>
+        )}
+       </p>
+      )}
+      {!product.brand && colorSerialNumber && (
+       <p className="text-sm text-gray-500 mb-2">
+        <span className="font-mono text-gray-600">Seri No: {colorSerialNumber}</span>
        </p>
       )}
 
@@ -212,30 +268,24 @@ export default function UrunDetayPage() {
       <ProductPrice
        displayPrice={displayPrice}
        hasDiscount={hasDiscount}
-       originalPrice={product.price}
+       originalPrice={colorPrice}
       />
 
       <p className="text-gray-600 mb-6 leading-relaxed max-w-2xl wrap-break-word">
        {product.description}
       </p>
 
-      <ProductStockStatus stock={product.stock} />
+      <ProductStockStatus stock={colorStock} />
 
       <ProductColorSelector
        colors={product.colors}
        selectedColor={selectedColor}
-       onColorSelect={setSelectedColor}
-      />
-
-      <ProductSizeSelector
-       sizes={product.sizes}
-       selectedSize={selectedSize}
-       onSizeSelect={setSelectedSize}
+       onColorSelect={handleColorSelect}
       />
 
       <ProductQuantitySelector
        quantity={quantity}
-       stock={product.stock}
+       stock={colorStock}
        onQuantityChange={setQuantity}
       />
 
@@ -249,9 +299,12 @@ export default function UrunDetayPage() {
       />
 
       <ProductFeatures />
-
-      <ProductDetails product={product} />
      </div>
+    </div>
+
+    {/* Tüm Özellikler Bölümü */}
+    <div className="mt-12">
+     <ProductAllFeatures product={product} selectedColor={selectedColor} />
     </div>
    </div>
   </div>

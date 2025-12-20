@@ -19,7 +19,7 @@ export async function GET(request) {
 
   let query = {};
 
-  // Arama parametresi varsa name, description ve tags'de ara
+  // Arama parametresi varsa name, description, tags, brand, category, subCategory ve serialNumber'da ara
   if (search && search.trim()) {
    const searchTerm = search.trim();
    const searchRegex = new RegExp(searchTerm, 'i');
@@ -29,7 +29,8 @@ export async function GET(request) {
     { tags: { $in: [searchRegex] } },
     { brand: searchRegex },
     { category: searchRegex },
-    { subCategory: searchRegex }
+    { subCategory: searchRegex },
+    { serialNumber: searchRegex }
    ];
   }
 
@@ -44,8 +45,15 @@ export async function GET(request) {
     { $expr: { $lt: ['$discountPrice', '$price'] } }
    ];
   } else if (category) {
-   // Normal kategoriler için kategori araması
-   query.category = { $regex: new RegExp(`^${category}$`, 'i') };
+   // Normal kategoriler için kategori araması (case-insensitive, tam eşleşme)
+   // Türkçe karakterler için normalize et
+   const normalizedCategory = category.trim();
+   query.category = { $regex: new RegExp(`^${normalizedCategory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
+
+   if (process.env.NODE_ENV === 'development') {
+    console.log('Filtering by category:', normalizedCategory);
+    console.log('Category regex:', query.category.$regex);
+   }
   }
 
   if (subCategory) {
@@ -115,6 +123,38 @@ export async function POST(request) {
 
   const body = await request.json();
 
+  // Renk bazlı seri numarası validasyonu
+  if (!body.colors || !Array.isArray(body.colors) || body.colors.length === 0) {
+   return NextResponse.json(
+    { success: false, error: 'En az bir renk eklemelisiniz!' },
+    { status: 400 }
+   );
+  }
+
+  // Her renk için seri numarası kontrolü
+  const colorSerialNumbers = [];
+  for (const color of body.colors) {
+   if (!color.serialNumber || !color.serialNumber.trim()) {
+    return NextResponse.json(
+     { success: false, error: `${color.name || 'Renk'} için seri numarası gereklidir!` },
+     { status: 400 }
+    );
+   }
+   const serialNumber = color.serialNumber.trim();
+
+   // Renk seviyesinde seri numarası benzersizliği kontrolü
+   const existingProduct = await Product.findOne({
+    'colors.serialNumber': serialNumber
+   });
+   if (existingProduct) {
+    return NextResponse.json(
+     { success: false, error: `Seri numarası "${serialNumber}" zaten kullanılıyor!` },
+     { status: 400 }
+    );
+   }
+   colorSerialNumbers.push(serialNumber);
+  }
+
   // Slug oluştur
   const slug = body.name
    .toLowerCase()
@@ -155,19 +195,75 @@ export async function POST(request) {
    }
   }
 
-  const validSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', "3XL", '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50'];
-  const processedSizes = body.sizes && Array.isArray(body.sizes)
-   ? body.sizes.map(s => {
-    const upperSize = String(s).trim().toUpperCase();
-    return validSizes.includes(upperSize) ? upperSize : null;
-   }).filter(Boolean)
-   : [];
-
-  const product = await Product.create({
-   ...body,
-   sizes: processedSizes,
+  // productData oluştururken renk bazlı verileri ekle
+  const productData = {
+   name: body.name,
+   description: body.description,
+   price: price, // Varsayılan fiyat (ilk rengin fiyatı)
+   discountPrice: body.discountPrice || null,
+   category: body.category,
+   subCategory: body.subCategory || '',
+   images: body.images || [], // Varsayılan resimler (ilk rengin resimleri)
+   colors: body.colors || [],
+   stock: body.stock || 0, // Toplam stok
+   brand: body.brand || '',
+   material: body.material || '',
+   tags: body.tags || [],
+   isNew: body.isNew || false,
+   isFeatured: body.isFeatured || false,
+   serialNumber: body.serialNumber || '', // Opsiyonel, artık renk seviyesinde tutuluyor
+   dimensions: body.dimensions || { height: null, width: null, depth: null },
+   netWeight: body.netWeight || null,
+   specifications: body.specifications || [],
    slug: `${slug}-${Date.now()}`,
-  });
+  };
+
+  // İlk rengin fiyatını ve resimlerini varsayılan olarak kullan
+  // Renk bazlı stokların toplamını hesapla
+  if (body.colors && body.colors.length > 0) {
+   productData.price = body.colors[0].price || price;
+   productData.discountPrice = body.colors[0].discountPrice || null;
+   productData.images = body.colors[0].images || [];
+   productData.serialNumber = body.colors[0].serialNumber || '';
+   // Renk bazlı stokların toplamını hesapla
+   productData.stock = body.colors.reduce((sum, color) => {
+    return sum + (Number(color.stock) || 0);
+   }, 0);
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+   console.log('Creating product with colors:', body.colors?.length || 0);
+   console.log('Product data keys:', Object.keys(productData));
+   console.log('Product data:', JSON.stringify(productData, null, 2));
+  }
+
+  let product;
+  try {
+   product = await Product.create(productData);
+  } catch (createError) {
+   console.error('Product creation error:', createError);
+   if (createError.name === 'ValidationError') {
+    const validationErrors = Object.values(createError.errors || {}).map(err => err.message).join(', ');
+    return NextResponse.json(
+     { success: false, error: `Validasyon hatası: ${validationErrors}` },
+     { status: 400 }
+    );
+   }
+   if (createError.code === 11000) {
+    // Duplicate key error
+    const field = Object.keys(createError.keyPattern || {})[0];
+    return NextResponse.json(
+     { success: false, error: `${field} zaten kullanılıyor!` },
+     { status: 400 }
+    );
+   }
+   throw createError;
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+   console.log('Created product with colors:', product.colors?.length || 0);
+   console.log('Created product full data:', JSON.stringify(product.toObject(), null, 2));
+  }
 
   return NextResponse.json({ success: true, data: product }, { status: 201 });
  } catch (error) {

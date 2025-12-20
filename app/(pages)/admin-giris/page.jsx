@@ -9,7 +9,9 @@ export default function AdminLoginPage() {
  const router = useRouter();
 
  const handleSuccess = () => {
-  router.push("/admin");
+  setTimeout(() => {
+   window.location.href = "/admin";
+  }, 100);
  };
 
  return (

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 import { HiMail, HiPhone, HiLocationMarker } from "react-icons/hi";
 import { MdCreditCard, MdLocalShipping, MdSecurity, MdRefresh } from "react-icons/md";
@@ -48,9 +49,17 @@ const Footer = () => {
    <div className="container mx-auto px-4 py-12">
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
      <div>
-      <h3 className="text-2xl font-black text-white mb-4">SHOP.CO</h3>
+      <div className="mb-4">
+       <Image
+        src="/profilo-favicon.png"
+        alt="PROFILO"
+        width={180}
+        height={60}
+        className="h-14 w-auto"
+       />
+      </div>
       <p className="text-sm mb-4 leading-relaxed">
-       Erkek giyim dünyasında en yeni trendleri keşfedin. Kaliteli ürünler, hızlı teslimat ve müşteri memnuniyeti önceliğimizdir.
+       Beyaz eşya dünyasında en kaliteli ürünleri keşfedin. Modern teknoloji, güvenilir markalar ve müşteri memnuniyeti önceliğimizdir.
       </p>
       <div className="flex gap-3 mt-6">
        {SOCIAL_LINKS.map((social) => {
@@ -98,27 +107,39 @@ const Footer = () => {
      <div>
       <h4 className="text-white font-bold mb-4">İletişim</h4>
       <ul className="space-y-3">
-       <li className="flex items-start gap-3">
-        <HiLocationMarker size={18} className="mt-0.5 text-indigo-400 shrink-0" />
-        <span className="text-sm">
-         Mimar Sinan Mahallesi, Orhangazi Caddesi
-         <br />
-         No: 10-12 Kat 1 Daire 5
-         <br />
-         İnegöl, Bursa
-        </span>
-       </li>
-       <li className="flex items-center gap-3">
-        <HiPhone size={18} className="text-indigo-400 shrink-0" />
-        <Link href="tel:+905078492903" className="text-sm hover:text-indigo-400 transition">
-         0507 849 29 03
-        </Link>
-       </li>
        <li className="flex items-center gap-3">
         <HiMail size={18} className="text-indigo-400 shrink-0" />
-        <Link href="mailto:destek@shop.co" className="text-sm hover:text-indigo-400 transition">
-         destek@shop.co
+        <Link href="mailto:info@yazici.gen.tr" className="text-sm hover:text-indigo-400 transition">
+         info@yazici.gen.tr
         </Link>
+       </li>
+       <li className="flex items-start gap-3">
+        <HiLocationMarker size={18} className="mt-0.5 text-indigo-400 shrink-0" />
+        <div className="text-sm">
+         <p className="font-semibold text-white mb-1">Mağaza 1</p>
+         <p className="text-gray-300">
+          Kemalpaşa, Atatürk Blv. No:54/E
+          <br />
+          İnegöl/Bursa
+         </p>
+         <Link href="tel:+905447967770" className="text-indigo-400 hover:text-indigo-300 transition text-sm mt-1 block">
+          0544 796 77 70
+         </Link>
+        </div>
+       </li>
+       <li className="flex items-start gap-3">
+        <HiLocationMarker size={18} className="mt-0.5 text-indigo-400 shrink-0" />
+        <div className="text-sm">
+         <p className="font-semibold text-white mb-1">Mağaza 2</p>
+         <p className="text-gray-300">
+          Cuma mah. Atatürk Blv. No:51
+          <br />
+          İnegöl/Bursa
+         </p>
+         <Link href="tel:+905013496991" className="text-indigo-400 hover:text-indigo-300 transition text-sm mt-1 block">
+          0501 349 69 91
+         </Link>
+        </div>
        </li>
       </ul>
      </div>
@@ -147,7 +168,7 @@ const Footer = () => {
      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
       <div className="flex flex-col gap-1">
        <p className="text-sm text-gray-400">
-        © {currentYear} SHOP.CO. Tüm hakları saklıdır.
+        © {currentYear} PROFILO. Tüm hakları saklıdır.
        </p>
        <p className="text-xs text-gray-500">
         Site tasarımı ve geliştirme:{" "}

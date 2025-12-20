@@ -5,6 +5,7 @@ import AboutSection from "@/app/components/about/AboutSection";
 import ValuesGrid from "@/app/components/about/ValuesGrid";
 import WhyChooseUs from "@/app/components/about/WhyChooseUs";
 import ContactSection from "@/app/components/about/ContactSection";
+import SirketBilgileri from "@/app/components/about/SirketBilgileri";
 
 export default function BizKimizPage() {
  return (
@@ -12,11 +13,15 @@ export default function BizKimizPage() {
    <div className="container mx-auto px-4 max-w-4xl">
     <AboutHeader />
 
+    <div className="mb-8">
+     <SirketBilgileri />
+    </div>
+
     <div className="bg-white rounded-xl shadow-md p-8 md:p-12 space-y-8">
      <AboutSection icon={HiLightBulb} title="Hikayemiz">
       <p>
-       SHOP.CO, 2024 yılında erkek giyim sektöründe modern ve kaliteli ürünleri müşterilerimize ulaştırmak amacıyla kuruldu.
-       Müşterilerimizin stil ihtiyaçlarını karşılamak ve onlara en iyi alışveriş deneyimini sunmak için çalışıyoruz.
+       PROFILO, 2024 yılında beyaz eşya sektöründe modern ve kaliteli ürünleri müşterilerimize ulaştırmak amacıyla kuruldu.
+       Müşterilerimizin ev ihtiyaçlarını karşılamak ve onlara en iyi alışveriş deneyimini sunmak için çalışıyoruz.
       </p>
       <p>
        Başlangıçta küçük bir ekip olarak başladığımız yolculuğumuzda, müşteri memnuniyetini her şeyin üzerinde tutarak
@@ -26,7 +31,7 @@ export default function BizKimizPage() {
 
      <AboutSection icon={HiHeart} title="Misyonumuz">
       <p>
-       Misyonumuz, erkek giyim dünyasında en kaliteli ürünleri, en uygun fiyatlarla müşterilerimize sunmak ve
+       Misyonumuz, beyaz eşya dünyasında en kaliteli ürünleri, en uygun fiyatlarla müşterilerimize sunmak ve
        onlara unutulmaz bir alışveriş deneyimi yaşatmaktır.
       </p>
       <p>
@@ -37,7 +42,7 @@ export default function BizKimizPage() {
 
      <AboutSection icon={HiTrendingUp} title="Vizyonumuz">
       <p>
-       Türkiye&apos;nin en güvenilir ve tercih edilen erkek giyim e-ticaret platformu olmak,
+       Türkiye&apos;nin en güvenilir ve tercih edilen beyaz eşya e-ticaret platformu olmak,
        müşterilerimize her zaman en iyi hizmeti sunmak ve sektörde öncü bir konuma gelmek vizyonumuzdur.
       </p>
       <p>

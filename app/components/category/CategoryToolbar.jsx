@@ -17,7 +17,8 @@ export default function CategoryToolbar({ sortBy, onSortChange, onFiltersClick }
     <select
      value={sortBy}
      onChange={(e) => onSortChange(e.target.value)}
-     className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500"
+     className="border border-gray-300 rounded-lg pl-4 pr-6 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500"
+     style={{ backgroundPosition: 'right 0.5rem center' }}
     >
      <option value="-createdAt">Yeni Ürünler</option>
      <option value="price">Fiyat: Düşükten Yükseğe</option>

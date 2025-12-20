@@ -3,11 +3,6 @@ import { useState } from "react";
 import { HiLockClosed, HiUser, HiLogin } from "react-icons/hi";
 import AlertMessage from "@/app/components/auth/AlertMessage";
 
-/**
- * Admin Login Form Component
- * 
- * @param {function} onSuccess - Giriş başarılı olduğunda callback
- */
 export default function AdminLoginForm({ onSuccess }) {
  const [username, setUsername] = useState("");
  const [password, setPassword] = useState("");
@@ -23,12 +18,29 @@ export default function AdminLoginForm({ onSuccess }) {
    const res = await fetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include", // Cookie'lerin gönderilmesi için gerekli
     body: JSON.stringify({ username, password }),
    });
 
    const data = await res.json();
 
    if (data.success) {
+    console.log('✅ Giriş başarılı!', data);
+
+    // Development'ta cookie'yi kontrol et
+    if (process.env.NODE_ENV === 'development') {
+     // Cookie'nin set edilmesi için kısa bir bekleme
+     await new Promise(resolve => setTimeout(resolve, 200));
+
+     const cookies = document.cookie.split(';');
+     const adminSession = cookies.find(c => c.trim().startsWith('admin-session='));
+     console.log('🍪 Cookie kontrolü:', {
+      hasCookie: !!adminSession,
+      cookieValue: adminSession ? adminSession.split('=')[1] : null,
+      allCookies: document.cookie
+     });
+    }
+
     if (onSuccess) {
      onSuccess();
     }

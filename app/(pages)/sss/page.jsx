@@ -20,10 +20,6 @@ export default function SSSPage() {
    answer: "Evet, ürünlerinizi 14 gün içinde iade edebilirsiniz. Ürünün kullanılmamış, etiketli ve orijinal ambalajında olması gerekmektedir. İade işlemleri için 'İade ve Değişim' sayfasından başvuru yapabilirsiniz."
   },
   {
-   question: "Beden değişikliği yapabilir miyim?",
-   answer: "Evet, ürünü aldıktan sonra 14 gün içinde beden değişikliği yapabilirsiniz. Ürünün kullanılmamış ve etiketli olması şarttır. Değişim işlemi için 'İade ve Değişim' sayfasından başvuru yapabilirsiniz."
-  },
-  {
    question: "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
    answer: "Kredi kartı, banka kartı, havale/EFT ve kapıda ödeme seçeneklerini kabul ediyoruz. Tüm ödemeler güvenli SSL sertifikası ile korunmaktadır."
   },

@@ -20,6 +20,9 @@ export default function AdminUrunYonetimiPage() {
  const [editingProduct, setEditingProduct] = useState(null);
  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
  const [confirmDialog, setConfirmDialog] = useState({ show: false, message: "", onConfirm: null });
+ const [selectedCategory, setSelectedCategory] = useState(null);
+ const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+ const [selectedStockFilter, setSelectedStockFilter] = useState(null);
 
  useEffect(() => {
   checkAuth();
@@ -58,7 +61,7 @@ export default function AdminUrunYonetimiPage() {
 
  const fetchProducts = async () => {
   try {
-   const res = await axiosInstance.get("/api/products?limit=100");
+   const res = await axiosInstance.get("/api/products?limit=1000");
    const data = res.data;
    if (data.success) {
     setProducts(data.data);
@@ -140,8 +143,41 @@ export default function AdminUrunYonetimiPage() {
    />
    <AdminProductsHeader onLogout={handleLogout} />
    <AdminProductsStats
-    totalProducts={products.length}
-    inStockProducts={products.filter(p => p.stock > 0).length}
+    totalProducts={(() => {
+     // Her ürün için tüm renk varyantlarını say
+     let count = 0;
+     products.forEach((product) => {
+      if (product.colors && Array.isArray(product.colors) && product.colors.length > 0) {
+       // Her renk varyantı için ayrı bir ürün say
+       product.colors.forEach((color) => {
+        if (typeof color === 'object' && color.serialNumber) {
+         count++;
+        }
+       });
+      } else {
+       // Renk yoksa normal ürünü say
+       count++;
+      }
+     });
+     return count;
+    })()}
+    inStockProducts={(() => {
+     // Stokta olan ürünleri say (renk varyantları dahil)
+     let count = 0;
+     products.forEach((product) => {
+      if (product.colors && Array.isArray(product.colors) && product.colors.length > 0) {
+       product.colors.forEach((color) => {
+        if (typeof color === 'object' && color.serialNumber) {
+         const stock = color.stock !== undefined ? color.stock : product.stock;
+         if (stock > 0) count++;
+        }
+       });
+      } else {
+       if (product.stock > 0) count++;
+      }
+     });
+     return count;
+    })()}
    />
 
    <div className="container mx-auto px-4">
@@ -153,6 +189,12 @@ export default function AdminUrunYonetimiPage() {
       resetForm();
       setShowProductModal(true);
      }}
+     selectedCategory={selectedCategory}
+     selectedSubCategory={selectedSubCategory}
+     selectedStockFilter={selectedStockFilter}
+     onCategoryChange={setSelectedCategory}
+     onSubCategoryChange={setSelectedSubCategory}
+     onStockFilterChange={setSelectedStockFilter}
     />
    </div>
 

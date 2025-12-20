@@ -1,0 +1,68 @@
+"use client";
+import { MENU_ITEMS } from "@/app/components/ui/Header";
+
+const categoryToSlug = (categoryName) => {
+ if (!categoryName) return "";
+ return categoryName
+  .toLowerCase()
+  .replace(/ğ/g, 'g')
+  .replace(/ü/g, 'u')
+  .replace(/ş/g, 's')
+  .replace(/ı/g, 'i')
+  .replace(/ö/g, 'o')
+  .replace(/ç/g, 'c')
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '');
+};
+
+export const getProductUrl = (product, colorSerialNumber = null) => {
+ if (!product) return "/";
+
+ // İlk rengin seri numarasını kullan (eğer belirtilmemişse)
+ const serialNumber = colorSerialNumber || (
+  product.colors && product.colors.length > 0 && typeof product.colors[0] === 'object'
+   ? product.colors[0].serialNumber
+   : product.serialNumber
+ );
+
+ if (!serialNumber) {
+  // Fallback: eski URL formatı
+  return `/urun/${product.slug}`;
+ }
+
+ // MENU_ITEMS'den kategori ve alt kategori path'lerini bul
+ let categoryPath = "";
+ let subCategoryPath = "";
+
+ // Ana kategoriyi bul
+ const mainMenuItem = MENU_ITEMS.find(item => item.name === product.category);
+ if (mainMenuItem) {
+  categoryPath = mainMenuItem.path.replace('/kategori/', '');
+
+  // Alt kategoriyi bul
+  if (product.subCategory && mainMenuItem.subCategories) {
+   const subCat = mainMenuItem.subCategories.find(sub => sub.name === product.subCategory);
+   if (subCat) {
+    subCategoryPath = subCat.path.replace(`/kategori/${categoryPath}/`, '');
+   }
+  }
+ }
+
+ // Eğer MENU_ITEMS'de bulunamadıysa, slug oluştur
+ if (!categoryPath) {
+  categoryPath = categoryToSlug(product.category);
+ }
+ if (!subCategoryPath && product.subCategory) {
+  subCategoryPath = categoryToSlug(product.subCategory);
+ }
+
+ // URL oluştur
+ if (categoryPath && subCategoryPath) {
+  return `/kategori/${categoryPath}/${subCategoryPath}/${serialNumber}`;
+ } else if (categoryPath) {
+  return `/kategori/${categoryPath}/${serialNumber}`;
+ }
+
+ // Fallback
+ return `/urun/${product.slug}`;
+};

@@ -144,20 +144,20 @@ export default function OrderDetailModal({ show, order, user, onClose }) {
         const groups = new Map();
         for (const it of items) {
          const name = it?.name || it?.productName || it?.title || "Ürün";
-         const size = it?.size ? String(it.size) : "";
-         const key = `${name}||${size}`;
+         const key = `${name}`;
 
          const qty = Number(it?.quantity || 1) || 1;
          const price = Number(it?.price || 0) || 0;
          const color = it?.color ? String(it.color).trim() : "";
+         const serialNumber = it?.serialNumber ? String(it.serialNumber).trim() : "";
 
          if (!groups.has(key)) {
           groups.set(key, {
            name,
-           size,
            totalQty: 0,
            totalAmount: 0,
            colorCounts: new Map(),
+           serialNumber: serialNumber || "",
           });
          }
          const g = groups.get(key);
@@ -165,6 +165,10 @@ export default function OrderDetailModal({ show, order, user, onClose }) {
          g.totalAmount += price * qty;
          if (color) {
           g.colorCounts.set(color, (g.colorCounts.get(color) || 0) + qty);
+         }
+         // Seri numarasını ilk bulunan değerle set et (eğer yoksa)
+         if (serialNumber && !g.serialNumber) {
+          g.serialNumber = serialNumber;
          }
         }
 
@@ -177,13 +181,16 @@ export default function OrderDetailModal({ show, order, user, onClose }) {
           : "";
 
          return (
-          <div key={`${g.name}-${g.size}-${idx}`} className="border rounded-xl p-4 flex items-center justify-between gap-4">
+          <div key={`${g.name}-${idx}`} className="border rounded-xl p-4 flex items-center justify-between gap-4">
            <div>
             <div className="font-semibold text-gray-900">{g.name}</div>
             <div className="text-sm text-gray-600">
-             {g.size ? `Beden: ${g.size}` : ""}
-             {g.size && colorsText ? " • " : ""}
-             {colorsText ? `Renk: ${colorsText}` : ""}
+             {colorsText ? <><span className="font-bold">Renk:</span> {colorsText} </> : ""}
+             {g.serialNumber && (
+              <span className={colorsText ? " • " : ""}>
+               <span className="font-bold">Seri No:</span> <span className="font-mono">{g.serialNumber}</span>
+              </span>
+             )}
             </div>
            </div>
            <div className="text-right">

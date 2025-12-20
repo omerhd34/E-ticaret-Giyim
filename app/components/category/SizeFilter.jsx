@@ -1,6 +1,10 @@
 "use client";
 
 export default function SizeFilter({ availableSizes, selectedSizes, onSizeToggle, isMobile = false }) {
+ if (!availableSizes || availableSizes.length === 0) {
+  return null;
+ }
+
  return (
   <div className={isMobile ? "" : "mb-6 pb-6 border-b"}>
    <h4 className="font-semibold mb-4">Beden</h4>
