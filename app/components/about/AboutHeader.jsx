@@ -11,7 +11,7 @@ export default function AboutHeader() {
     Biz Kimiz?
    </h1>
    <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-    Erkek giyim dünyasında kalite, stil ve müşteri memnuniyetini bir araya getiren bir e-ticaret platformuyuz.
+    Profilo markası beyaz eşya ve elektronik ürünlerinde kalite, güven ve müşteri memnuniyetini bir araya getiren bir e-ticaret platformuyuz.
    </p>
   </div>
  );

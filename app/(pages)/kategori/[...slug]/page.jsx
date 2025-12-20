@@ -101,9 +101,6 @@ export default function KategoriPage() {
 
      if (!category) {
       const categoryMap = {
-       giyim: "Giyim",
-       ayakkabi: "Ayakkabı",
-       aksesuar: "Aksesuar",
        yeni: "YENİ GELENLER",
        indirim: "İndirimler"
       };
@@ -418,14 +415,9 @@ export default function KategoriPage() {
    const categorySlug = decodeURIComponent(slug[0]);
    router.push(`/kategori/${categorySlug}`);
   }
-
-  // useEffect otomatik olarak fetchProducts'ı tetikleyecek
  };
 
  const categoryNames = {
-  giyim: "Giyim",
-  ayakkabi: "Ayakkabı",
-  aksesuar: "Aksesuar",
   yeni: "Yeni Gelenler",
   indirim: "İndirimler",
  };

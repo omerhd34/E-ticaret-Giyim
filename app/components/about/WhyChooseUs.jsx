@@ -5,7 +5,7 @@ export default function WhyChooseUs() {
  const features = [
   {
    title: "Geniş Ürün Yelpazesi",
-   description: "Ayakkabı, giyim ve aksesuar kategorilerinde binlerce kaliteli ürün seçeneği."
+   description: "Beyaz eşya, ankastre, elektronik ve daha fazlası kategorilerinde geniş ürün yelpazesi. Profilo markasının kaliteli ürünleri."
   },
   {
    title: "Hızlı ve Güvenli Teslimat",
