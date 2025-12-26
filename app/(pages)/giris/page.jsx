@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { HiLogin, HiUserAdd } from "react-icons/hi";
+import { HiLogin, HiUserAdd, HiArrowLeft } from "react-icons/hi";
 import LoginForm from "@/app/components/auth/LoginForm";
 import RegisterForm from "@/app/components/auth/RegisterForm";
 import ForgotPasswordModal from "@/app/components/auth/ForgotPasswordModal";
@@ -176,9 +176,10 @@ export default function GirisPage() {
      <div className="mt-6 text-center">
       <Link
        href="/"
-       className="text-indigo-600 hover:text-indigo-800 font-semibold text-sm"
+       className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition-colors duration-200"
       >
-       ← Ana Sayfaya Dön
+       <HiArrowLeft size={18} />
+       Ana Sayfaya Dön
       </Link>
      </div>
     </div>

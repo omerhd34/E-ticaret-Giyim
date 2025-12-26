@@ -61,7 +61,7 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemove }) {
          item.quantity - 1
         )
        }
-       className="p-2 hover:bg-gray-100 transition"
+       className="p-2 hover:bg-gray-100 transition cursor-pointer"
       >
        <HiMinus size={16} />
       </button>
@@ -75,7 +75,7 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemove }) {
          item.quantity + 1
         )
        }
-       className="p-2 hover:bg-gray-100 transition"
+       className="p-2 hover:bg-gray-100 transition cursor-pointer"
        disabled={item.quantity >= Math.min(item.stock || 10, 10)}
       >
        <HiPlus size={16} />
@@ -84,7 +84,7 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemove }) {
 
      <button
       onClick={() => onRemove(item._id, item.selectedSize, item.selectedColor)}
-      className="text-red-600 hover:text-red-800 p-2 transition"
+      className="text-red-600 hover:text-red-800 p-2 transition cursor-pointer"
      >
       <MdDelete size={18} />
      </button>

@@ -18,7 +18,7 @@ export default function AdminLoginForm({ onSuccess }) {
    const res = await fetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "include", // Cookie'lerin gönderilmesi için gerekli
+    credentials: "include",
     body: JSON.stringify({ username, password }),
    });
 
@@ -93,7 +93,7 @@ export default function AdminLoginForm({ onSuccess }) {
     <button
      type="submit"
      disabled={loading}
-     className="w-full bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+     className="w-full bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl cursor-pointer"
     >
      {loading ? (
       <>

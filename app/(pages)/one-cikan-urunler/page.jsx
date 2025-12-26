@@ -189,7 +189,7 @@ export default function OneCikanUrunlerPage() {
         {activeFilterCount > 0 && (
          <button
           onClick={clearFilters}
-          className="text-sm text-indigo-600 hover:text-indigo-800 font-semibold"
+          className="text-sm text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer"
          >
           Temizle
          </button>

@@ -1,10 +1,14 @@
 "use client";
 import Image from "next/image";
+import { useState, useMemo } from "react";
 import { HiPlus, HiX } from "react-icons/hi";
-import { MdDelete, MdEdit, MdInventory2, MdStar, MdCheckCircle, MdNewReleases } from "react-icons/md";
+import { MdDelete, MdEdit, MdInventory2, MdStar, MdCheckCircle, MdNewReleases, MdArrowUpward, MdArrowDownward } from "react-icons/md";
 import { MENU_ITEMS } from "@/app/utils/menuItems";
 
 export default function ProductListTable({ products, onEdit, onDelete, onAddNew, selectedCategory, selectedSubCategory, selectedStockFilter, selectedFeaturedFilter, selectedNewFilter, onCategoryChange, onSubCategoryChange, onStockFilterChange, onFeaturedFilterChange, onNewFilterChange }) {
+ const [sortBy, setSortBy] = useState(null); // 'price' | 'stock' | null
+ const [sortOrder, setSortOrder] = useState('asc'); // 'asc' | 'desc'
+
  const categoryFilteredProducts = products.filter((product) => {
   if (selectedCategory && product.category !== selectedCategory) {
    return false;
@@ -74,6 +78,42 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
 
   return true;
  });
+
+ // Sıralama fonksiyonu
+ const sortedProducts = useMemo(() => {
+  if (!sortBy) return filteredProducts;
+
+  return [...filteredProducts].sort((a, b) => {
+   const colorVariantA = a._selectedColor;
+   const colorVariantB = b._selectedColor;
+
+   let valueA, valueB;
+
+   if (sortBy === 'price') {
+    valueA = colorVariantA ? (colorVariantA.price || a.price || 0) : (a.price || 0);
+    valueB = colorVariantB ? (colorVariantB.price || b.price || 0) : (b.price || 0);
+   } else if (sortBy === 'stock') {
+    valueA = colorVariantA ? (colorVariantA.stock !== undefined ? Number(colorVariantA.stock) || 0 : 0) : (a.stock !== undefined ? Number(a.stock) || 0 : 0);
+    valueB = colorVariantB ? (colorVariantB.stock !== undefined ? Number(colorVariantB.stock) || 0 : 0) : (b.stock !== undefined ? Number(b.stock) || 0 : 0);
+   } else {
+    return 0;
+   }
+
+   const comparison = Number(valueA) - Number(valueB);
+   return sortOrder === 'asc' ? comparison : -comparison;
+  });
+ }, [filteredProducts, sortBy, sortOrder]);
+
+ const handleSort = (column) => {
+  if (sortBy === column) {
+   // Aynı sütuna tıklandığında sıralama yönünü değiştir
+   setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  } else {
+   // Yeni sütuna tıklandığında artan sıralama ile başla
+   setSortBy(column);
+   setSortOrder('asc');
+  }
+ };
 
  const totalProductCount = products.reduce((count, product) => {
   if (product.colors && Array.isArray(product.colors) && product.colors.length > 0) {
@@ -262,14 +302,34 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
        <tr>
         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Ürün</th>
         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Kategori</th>
-        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Fiyat (₺)</th>
-        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Stok</th>
+        <th
+         className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:bg-gray-100 transition-colors select-none"
+         onClick={() => handleSort('price')}
+        >
+         <div className="flex items-center gap-2">
+          Fiyat (₺)
+          {sortBy === 'price' && (
+           sortOrder === 'asc' ? <MdArrowUpward size={16} className="text-indigo-600" /> : <MdArrowDownward size={16} className="text-indigo-600" />
+          )}
+         </div>
+        </th>
+        <th
+         className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:bg-gray-100 transition-colors select-none"
+         onClick={() => handleSort('stock')}
+        >
+         <div className="flex items-center gap-2">
+          Stok
+          {sortBy === 'stock' && (
+           sortOrder === 'asc' ? <MdArrowUpward size={16} className="text-indigo-600" /> : <MdArrowDownward size={16} className="text-indigo-600" />
+          )}
+         </div>
+        </th>
         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Durum</th>
         <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">İşlemler</th>
        </tr>
       </thead>
       <tbody className="divide-y divide-gray-200">
-       {filteredProducts.map((product) => {
+       {sortedProducts.map((product) => {
         const colorVariant = product._selectedColor;
         const displayPrice = colorVariant ? (colorVariant.price || product.price) : product.price;
         const displayDiscountPrice = colorVariant ? (colorVariant.discountPrice !== undefined ? colorVariant.discountPrice : product.discountPrice) : product.discountPrice;
@@ -326,7 +386,8 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
               Stokta
              </span>
             ) : (
-             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+              <HiX size={14} />
               Stok Yok
              </span>
             )}

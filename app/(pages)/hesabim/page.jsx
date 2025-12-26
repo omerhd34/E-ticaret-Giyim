@@ -727,7 +727,23 @@ export default function Hesabim() {
   }
 
   if (!cardForm.cardHolderName.trim()) errors.cardHolderName = "Kart sahibi adı gereklidir!";
-  if (!cardForm.expiryDate.match(/^(0[1-9]|1[0-2])\/\d{2}$/)) errors.expiryDate = "Geçerli bir son kullanma tarihi giriniz (AA/YY)!";
+  if (!cardForm.expiryDate.match(/^(0[1-9]|1[0-2])\/\d{2}$/)) {
+   errors.expiryDate = "Geçerli bir son kullanma tarihi giriniz (AA/YY)!";
+  } else {
+   // Son kullanma tarihinin bugünden sonra olup olmadığını kontrol et
+   const [month, year] = cardForm.expiryDate.split('/');
+   const expiryMonth = parseInt(month, 10);
+   const expiryYear = 2000 + parseInt(year, 10); // YY -> YYYY
+   const currentDate = new Date();
+
+   // Son kullanma tarihini ayın son günü olarak hesapla
+   // new Date(year, month, 0) ayın son gününü verir (month 1-12 arası)
+   const expiryDate = new Date(expiryYear, expiryMonth, 0);
+
+   if (expiryDate <= currentDate) {
+    errors.expiryDate = "Son kullanma tarihi bugünün tarihinden sonra olmalıdır!";
+   }
+  }
   if (!cardForm.cvv.match(/^\d{3}$/)) errors.cvv = "Geçerli bir 3 haneli CVV giriniz!";
 
   if (Object.keys(errors).length > 0) {

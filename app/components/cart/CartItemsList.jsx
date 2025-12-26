@@ -15,7 +15,7 @@ export default function CartItemsList({ cartItems, onUpdateQuantity, onRemove, o
 
    <button
     onClick={onClearCart}
-    className="text-red-600 hover:text-red-800 font-semibold text-sm"
+    className="text-red-600 hover:text-red-800 font-semibold text-sm cursor-pointer"
    >
     Sepeti Temizle
    </button>

@@ -104,6 +104,7 @@ export default function OdemePage() {
   if (!acceptedTerms) return false;
   if (!selectedAddressId) return false;
   if (paymentMethod.type === "card" && !paymentMethod.cardId) return false;
+  if (paymentMethod.type === "havale" || paymentMethod.type === "cash") return true;
   return true;
  }, [acceptedTerms, cart, paymentMethod, selectedAddressId]);
 
@@ -115,7 +116,7 @@ export default function OdemePage() {
    return;
   }
   if (paymentMethod.type === "card" && !paymentMethod.cardId) {
-   setError("Lütfen bir kart seçin veya kapıda ödeme seçin.");
+   setError("Lütfen bir kart seçin veya diğer ödeme yöntemlerini kullanın.");
    return;
   }
   if (!acceptedTerms) {
@@ -125,7 +126,7 @@ export default function OdemePage() {
   setError("");
   setIsSubmitting(true);
 
-  if (paymentMethod.type === "cash") {
+  if (paymentMethod.type === "cash" || paymentMethod.type === "havale") {
    try {
     const selectedAddress = addresses.find((a) => String(a._id) === String(selectedAddressId));
     const addressSummary = selectedAddress
@@ -164,7 +165,7 @@ export default function OdemePage() {
      body: JSON.stringify({
       items: payloadItems,
       total: grandTotal,
-      paymentMethod: { type: "cash" },
+      paymentMethod: { type: paymentMethod.type },
       address: {
        id: selectedAddressId,
        summary: addressSummary,
@@ -188,7 +189,7 @@ export default function OdemePage() {
     setIsSubmitting(false);
    }
   } else {
-   setError("Kart ile ödeme henüz aktif değil. Şimdilik kapıda ödeme kullanın.");
+   setError("Kart ile ödeme henüz aktif değil. Şimdilik diğer ödeme yöntemlerini kullanın.");
    setIsSubmitting(false);
   }
  };

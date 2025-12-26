@@ -12,8 +12,14 @@ export default function ComparisonWidget() {
  const router = useRouter();
  const pathname = usePathname();
  const [isExpanded, setIsExpanded] = useState(false);
- const [mounted, setMounted] = useState(() => typeof window !== 'undefined');
+ const [mounted, setMounted] = useState(false);
  const [isModalOpen, setIsModalOpen] = useState(false);
+
+ // Client-side mount kontrolü (hydration hatasını önlemek için)
+ useEffect(() => {
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  setMounted(true);
+ }, []);
 
  // Modal açık mı kontrol et
  useEffect(() => {
@@ -64,7 +70,7 @@ export default function ComparisonWidget() {
  };
 
  return (
-  <div className="fixed bottom-4 right-4 z-50 w-full max-w-xs">
+  <div className="fixed bottom-4 left-4 z-50 w-full max-w-xs">
    <div className="bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
     {/* Header */}
     <button

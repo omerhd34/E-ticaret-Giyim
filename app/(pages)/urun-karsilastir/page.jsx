@@ -4,7 +4,7 @@ import { useComparison } from "@/context/ComparisonContext";
 import { useCart } from "@/context/CartContext";
 import Image from "next/image";
 import Link from "next/link";
-import { HiX, HiSwitchHorizontal, HiHeart } from "react-icons/hi";
+import { HiX, HiSwitchHorizontal, HiHeart, HiTrash } from "react-icons/hi";
 import { FaShoppingCart } from "react-icons/fa";
 import { getProductUrl } from "@/app/utils/productUrl";
 import Toast from "@/app/components/ui/Toast";
@@ -185,10 +185,10 @@ export default function UrunKarsilastirPage() {
      <div>
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Ürün Karşılaştırma</h1>
       <p className="text-gray-600">
-       {comparisonItems.length} ürün karşılaştırılıyor
+       {comparisonItems.length} ürün karşılaştırılıyor.
       </p>
      </div>
-     <div className="flex items-center gap-3">
+     <div className="flex items-center gap-6">
       <label className="flex items-center gap-2 cursor-pointer">
        <input
         type="checkbox"
@@ -202,8 +202,9 @@ export default function UrunKarsilastirPage() {
       </label>
       <button
        onClick={clearComparison}
-       className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold"
+       className="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-500 transition font-semibold cursor-pointer flex items-center gap-2"
       >
+       <HiTrash size={18} />
        Tümünü Temizle
       </button>
      </div>
@@ -214,7 +215,7 @@ export default function UrunKarsilastirPage() {
       <table className="w-full min-w-[1000px] border-collapse">
        <thead>
         <tr className="border-b-2 border-gray-200">
-         <th className="p-3 text-left font-bold text-gray-900 sticky left-0 bg-white z-20 min-w-[150px] max-w-[150px] border-r border-gray-200">
+         <th className="p-3 text-left font-semibold text-gray-900 sticky left-0 bg-white z-20 min-w-[150px] max-w-[150px] border-r border-gray-200">
           Ürünler
          </th>
          {comparisonItems.map((product) => (
@@ -222,10 +223,10 @@ export default function UrunKarsilastirPage() {
            <div className="relative flex flex-col items-center">
             <button
              onClick={() => removeFromComparison(product._id)}
-             className="absolute top-2 right-2 z-30 bg-white p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 transition rounded-full shadow-md border border-gray-200 hover:border-red-300 cursor-pointer"
+             className="absolute top-1 right-1 z-30 bg-white p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 transition rounded-full shadow-md border border-gray-200 hover:border-red-300 cursor-pointer"
              title="Karşılaştırmadan Kaldır"
             >
-             <HiX size={20} />
+             <HiX size={15} />
             </button>
 
             <Link href={getProductUrl(product)} className="block w-full mb-3">
@@ -257,64 +258,18 @@ export default function UrunKarsilastirPage() {
              </h3>
             </Link>
 
-            {product.brand && (
-             <p className="text-xs text-gray-500 mb-2 text-center">{product.brand}</p>
-            )}
-
-            <div className="mb-3 w-full">
-             {(() => {
-              const priceInfo = getPrice(product);
-              return (
-               <div className="flex flex-col items-center gap-1">
-                {priceInfo.hasDiscount ? (
-                 <>
-                  <span className="text-lg font-bold text-indigo-600">
-                   {priceInfo.displayPrice} ₺
-                  </span>
-                  <span className="text-xs text-gray-400 line-through">
-                   {priceInfo.price} ₺
-                  </span>
-                 </>
-                ) : (
-                 <span className="text-lg font-bold text-gray-900">
-                  {priceInfo.displayPrice} ₺
-                 </span>
-                )}
-               </div>
-              );
-             })()}
-            </div>
-
-            <div className="flex items-center justify-center gap-1.5 mb-3">
-             <div className="flex text-yellow-400">
-              {[...Array(5)].map((_, i) => (
-               <svg
-                key={i}
-                className={`w-3.5 h-3.5 ${i < Math.round(product.rating || 0) ? "fill-current" : "fill-transparent stroke-gray-300"}`}
-                viewBox="0 0 20 20"
-                strokeWidth={1}
-               >
-                <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-               </svg>
-              ))}
-             </div>
-             <span className="text-xs text-gray-500">
-              ({product.reviewCount || 0})
-             </span>
-            </div>
-
-            <div className="flex flex-col gap-2 w-full">
+            <div className="flex flex-col gap-2 w-full mt-2">
              <button
               onClick={() => handleAddToCart(product)}
               disabled={product.stock === 0}
-              className={`w-full py-2 rounded-lg font-semibold text-xs transition flex items-center justify-center gap-1.5  ${addedToCart[product._id]
+              className={`w-full py-2 rounded-lg font-semibold text-sm transition flex items-center justify-center gap-1.5  ${addedToCart[product._id]
                ? "bg-green-600 text-white"
                : product.stock > 0
                 ? "bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
                }`}
              >
-              <FaShoppingCart size={14} />
+              <FaShoppingCart size={16} />
               {addedToCart[product._id] ? "Eklendi" : "Sepete Ekle"}
              </button>
 
@@ -334,7 +289,7 @@ export default function UrunKarsilastirPage() {
 
               <Link
                href={getProductUrl(product)}
-               className="flex-1 py-2 rounded-lg border-2 border-gray-200 hover:border-indigo-500 hover:text-indigo-600 text-center font-semibold text-xs transition flex items-center justify-center"
+               className="flex-1 py-2 rounded-lg border-2 border-gray-200 hover:border-green-500 hover:text-green-600 text-center font-semibold text-sm transition flex items-center justify-center"
               >
                Detay
               </Link>
@@ -347,6 +302,50 @@ export default function UrunKarsilastirPage() {
        </thead>
        <tbody>
         {/* Genel Bilgiler */}
+        {/* Marka */}
+        {comparisonItems.some(p => p.brand) && isGeneralInfoDifferent('brand') && (
+         <tr className="border-b border-gray-100">
+          <td className="p-3 font-semibold text-gray-900 sticky left-0 bg-white z-20 border-r border-gray-200 align-middle min-w-[150px] max-w-[150px]">
+           Marka
+          </td>
+          {comparisonItems.map((product) => (
+           <td key={product._id} className="p-4 text-center align-middle text-sm">
+            {product.brand || "-"}
+           </td>
+          ))}
+         </tr>
+        )}
+
+        {/* Ürün Kodu */}
+        {comparisonItems.some(p => {
+         const allColors = p.colors || [];
+         const validColors = allColors.filter(c => typeof c === 'object' && c.serialNumber);
+         const firstColor = validColors.length > 0 ? validColors[0] : null;
+         return firstColor?.serialNumber || p.serialNumber;
+        }) && (
+          <tr className="border-b border-gray-100">
+           <td className="p-3 font-semibold text-gray-900 sticky left-0 bg-white z-20 border-r border-gray-200 align-middle min-w-[150px] max-w-[150px]">
+            Ürün Kodu
+           </td>
+           {comparisonItems.map((product) => {
+            const allColors = product.colors || [];
+            const validColors = allColors.filter(c => typeof c === 'object' && c.serialNumber);
+            const firstColor = validColors.length > 0 ? validColors[0] : null;
+            const productCode = firstColor?.serialNumber || product.serialNumber;
+            return (
+             <td key={product._id} className="p-4 text-center align-middle text-sm">
+              {productCode ? (
+               <span className="inline-block bg-indigo-100 text-indigo-700 font-mono text-sm px-2 py-0.5 rounded-md font-semibold">
+                {productCode}
+               </span>
+              ) : "-"}
+             </td>
+            );
+           })}
+          </tr>
+         )}
+
+        {/* Fiyat */}
         {isGeneralInfoDifferent('price') && (
          <tr className="bg-gray-50 border-b border-gray-100">
           <td className="p-3 font-semibold text-gray-900 sticky left-0 bg-gray-50 z-20 border-r border-gray-200 align-middle min-w-[150px] max-w-[150px]">
@@ -355,10 +354,10 @@ export default function UrunKarsilastirPage() {
           {comparisonItems.map((product) => {
            const priceInfo = getPrice(product);
            return (
-            <td key={product._id} className="p-4 text-center align-middle">
+            <td key={product._id} className="p-4 text-center align-middle text-sm">
              {priceInfo.hasDiscount ? (
               <div className="flex flex-col items-center gap-1">
-               <span className="text-lg font-bold text-indigo-600">
+               <span className="text-sm font-bold text-indigo-600">
                 {priceInfo.displayPrice} ₺
                </span>
                <span className="text-sm text-gray-400 line-through">
@@ -366,7 +365,7 @@ export default function UrunKarsilastirPage() {
                </span>
               </div>
              ) : (
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-sm font-bold text-gray-900">
                {priceInfo.displayPrice} ₺
               </span>
              )}
@@ -376,6 +375,7 @@ export default function UrunKarsilastirPage() {
          </tr>
         )}
 
+        {/* Stok Durumu */}
         {isGeneralInfoDifferent('stock') && (
          <tr className="border-b border-gray-100">
           <td className="p-3 font-semibold text-gray-900 sticky left-0 bg-white z-20 border-r border-gray-200 align-middle min-w-[150px] max-w-[150px]">
@@ -396,6 +396,7 @@ export default function UrunKarsilastirPage() {
          </tr>
         )}
 
+        {/* Değerlendirme */}
         {isGeneralInfoDifferent('rating') && (
          <tr className="bg-gray-50 border-b border-gray-100">
           <td className="p-3 font-semibold text-gray-900 sticky left-0 bg-gray-50 z-20 border-r border-gray-200 align-middle min-w-[150px] max-w-[150px]">
@@ -425,27 +426,10 @@ export default function UrunKarsilastirPage() {
          </tr>
         )}
 
-        {comparisonItems.some(p => p.brand) && isGeneralInfoDifferent('brand') && (
-         <tr className="border-b border-gray-100">
-          <td className="p-3 font-semibold text-gray-900 sticky left-0 bg-white z-20 border-r border-gray-200 align-middle min-w-[150px] max-w-[150px]">
-           Marka
-          </td>
-          {comparisonItems.map((product) => (
-           <td key={product._id} className="p-4 text-center align-middle">
-            {product.brand || "-"}
-           </td>
-          ))}
-         </tr>
-        )}
-
-        {/* Özellikler */}
+        {/* Özellikler - Tablo */}
         {Array.from(allSpecs.entries()).map(([categoryName, keysMap]) => {
-         // Kategorideki farklı özellikleri filtrele
          const differentKeys = Array.from(keysMap.keys()).filter(key => isDifferent(categoryName, key));
-
-         // Eğer bu kategoride farklı özellik yoksa, kategoriyi gösterme
          if (differentKeys.length === 0) return null;
-
          return (
           <React.Fragment key={categoryName}>
            <tr className="bg-indigo-50">
@@ -458,11 +442,11 @@ export default function UrunKarsilastirPage() {
            </tr>
            {differentKeys.map((key) => (
             <tr key={key} className="border-b border-gray-100">
-             <td className="p-3 text-gray-700 sticky left-0 bg-white z-20 border-r border-gray-200 align-middle font-medium min-w-[150px] max-w-[150px] text-sm">
+             <td className="p-3 font-semibold text-gray-900 sticky left-0 bg-white z-20 border-r border-gray-200 align-middle min-w-[150px] max-w-[150px]">
               {key}
              </td>
              {comparisonItems.map((product) => (
-              <td key={product._id} className="p-4 text-center text-gray-600 align-middle">
+              <td key={product._id} className="p-4 text-center text-gray-600 align-middle text-sm">
                {getSpecValue(product, categoryName, key)}
               </td>
              ))}

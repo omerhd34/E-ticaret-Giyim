@@ -1,19 +1,18 @@
 "use client";
 import Link from "next/link";
 import { HiHeart, HiChevronLeft, HiChevronRight, HiSwitchHorizontal } from "react-icons/hi";
+import { FaShoppingCart } from "react-icons/fa";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useComparison } from "@/context/ComparisonContext";
 import Image from "next/image";
 import { getProductUrl } from "@/app/utils/productUrl";
 import { getColorHex } from "@/app/utils/colorUtils";
-import Toast from "@/app/components/ui/Toast";
 
 export default function ProductCard({ product }) {
  const [isImageHovered, setIsImageHovered] = useState(false);
  const [currentImageIndex, setCurrentImageIndex] = useState(0);
- const [toast, setToast] = useState({ show: false, message: "", type: "success" });
- const { addToFavorites, removeFromFavorites, isFavorite: checkFavorite } = useCart();
+ const { addToFavorites, removeFromFavorites, isFavorite: checkFavorite, addToCart, removeFromCart, cart } = useCart();
  const { addToComparison, removeFromComparison, isInComparison, canAddMore } = useComparison();
  const isFavorite = checkFavorite(product._id);
  const inComparison = isInComparison(product._id);
@@ -35,6 +34,29 @@ export default function ProductCard({ product }) {
  const sortedColors = validColors;
  const hasMultipleColors = sortedColors.length > 1;
 
+ const isInCart = cart.some(item =>
+  item._id === product._id &&
+  item.selectedColor === (currentColor?.name || null)
+ );
+ const stock = currentColor?.stock !== undefined ? currentColor.stock : product.stock;
+
+ const handleAddToCart = async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (isInCart) {
+   const colorName = currentColor?.name || null;
+   await removeFromCart(product._id, null, colorName);
+   return;
+  }
+
+  if (stock === 0) {
+   return;
+  }
+  const colorName = currentColor?.name || null;
+  await addToCart(product, null, colorName, 1);
+ };
+
  const handleColorChange = (color) => {
   setSelectedColorState({ productId: product._id, color });
   const newColorImages = color?.images && color.images.length > 0 ? color.images : (product.images || []);
@@ -44,9 +66,6 @@ export default function ProductCard({ product }) {
  };
 
  const hasDiscount = colorDiscountPrice && colorDiscountPrice < colorPrice;
- const discountPercentage = hasDiscount
-  ? Math.round(((colorPrice - colorDiscountPrice) / colorPrice) * 100)
-  : 0;
 
  const productUrl = getProductUrl(product, colorSerialNumber);
 
@@ -58,9 +77,9 @@ export default function ProductCard({ product }) {
       YENİ
      </span>
     )}
-    {discountPercentage > 0 && (
+    {hasDiscount && (
      <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full text-center flex items-center justify-center">
-      %{discountPercentage} İNDİRİM
+      İNDİRİM
      </span>
     )}
    </div>
@@ -72,15 +91,12 @@ export default function ProductCard({ product }) {
       if (inComparison) {
        removeFromComparison(product._id);
       } else {
-       const result = addToComparison(product);
-       if (!result.success) {
-        setToast({ show: true, message: result.message, type: "error" });
-       }
+       addToComparison(product);
       }
      }}
      className={`p-2 rounded-full shadow-md transition-all cursor-pointer ${inComparison
-      ? "bg-indigo-600 text-white"
-      : "bg-white text-gray-400 hover:bg-indigo-50 hover:text-indigo-600"
+      ? "bg-green-700 text-white"
+      : "bg-white text-gray-400 hover:bg-green-50 hover:text-green-600"
       }`}
      title={inComparison ? "Karşılaştırmadan Çıkar" : "Karşılaştırmaya Ekle"}
     >
@@ -103,10 +119,23 @@ export default function ProductCard({ product }) {
     >
      <HiHeart size={18} className={isFavorite ? "fill-current" : ""} />
     </button>
+    <button
+     onClick={handleAddToCart}
+     disabled={stock === 0}
+     className={`p-2 rounded-full shadow-md transition-all cursor-pointer ${isInCart
+      ? "bg-amber-500 text-white"
+      : stock > 0
+       ? "bg-white text-gray-400 hover:bg-amber-50 hover:text-amber-500"
+       : "bg-white text-gray-300 cursor-not-allowed"
+      }`}
+     title={isInCart ? "Sepetten Çıkar" : stock > 0 ? "Sepete Ekle" : "Stokta Yok"}
+    >
+     <FaShoppingCart size={18} />
+    </button>
    </div>
 
    <div
-    className="relative aspect-square overflow-hidden bg-white flex items-center justify-center p-4"
+    className="relative aspect-square overflow-hidden bg-white flex items-center justify-center p-8"
     onMouseEnter={() => setIsImageHovered(true)}
     onMouseLeave={() => setIsImageHovered(false)}
    >
@@ -165,7 +194,7 @@ export default function ProductCard({ product }) {
     )}
    </div>
 
-   <div className="px-4 pt-3 pb-2 flex justify-center gap-2">
+   <div className="px-4 pt-2 pb-2 flex justify-center gap-2">
     {images.length > 1 ? (
      images.map((_, index) => (
       <button
@@ -187,7 +216,7 @@ export default function ProductCard({ product }) {
     )}
    </div>
 
-   <div className="p-4 bg-gray-100 flex-1 flex flex-col">
+   <div className="p-3 bg-gray-100 flex-1 flex flex-col">
     <div className="flex items-center justify-between mb-2">
      {product.brand && (
       <p className="text-xs text-gray-500 uppercase tracking-wide">
@@ -228,51 +257,52 @@ export default function ProductCard({ product }) {
     </div>
 
 
-    <div className="flex items-center justify-between gap-3 mt-auto pt-3 border-t border-gray-200">
-     <div className="flex items-baseline gap-2">
-      {hasDiscount ? (
-       <>
-        <span className="text-xl font-bold text-indigo-600 ">
-         {colorDiscountPrice} ₺
+    <div className="mt-auto pt-3 border-t border-gray-200">
+     <div className="px-1 pb-1 flex items-center justify-between gap-4">
+      <div className="flex items-baseline gap-2.5 shrink-0">
+       {hasDiscount ? (
+        <>
+         <span className="text-2xl font-bold text-indigo-600 tracking-tight">
+          {colorDiscountPrice.toLocaleString('tr-TR')} ₺
+         </span>
+         <span className="text-sm text-gray-400 line-through font-medium">
+          {colorPrice.toLocaleString('tr-TR')} ₺
+         </span>
+        </>
+       ) : (
+        <span className="text-2xl font-bold text-gray-900 tracking-tight">
+         {colorPrice.toLocaleString('tr-TR')} ₺
         </span>
-        <span className="text-sm text-gray-400 line-through">
-         {colorPrice} ₺
-        </span>
-       </>
-      ) : (
-       <span className="text-xl font-bold text-gray-900">
-        {colorPrice} ₺
-       </span>
+       )}
+      </div>
+
+      {validColors.length > 0 && (
+       <div className="flex gap-2.5 flex-wrap items-center shrink-0">
+        {sortedColors.map((color, idx) => {
+         const isSelected = currentColor && currentColor.serialNumber === color.serialNumber;
+         return (
+          <button
+           key={color.serialNumber || idx}
+           onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleColorChange(color);
+           }}
+           className={`w-7 h-7 rounded-full border-2 transition-all cursor-pointer hover:scale-110 shadow-sm ${isSelected
+            ? "border-indigo-600 scale-110 ring-2 ring-indigo-200 shadow-md"
+            : "border-gray-300 hover:border-gray-400"
+            }`}
+           style={{ backgroundColor: getColorHex(color) }}
+           title={color.name}
+           aria-label={`${color.name} rengini seç`}
+          />
+         );
+        })}
+       </div>
       )}
      </div>
-
-     {hasMultipleColors && (
-      <div className="flex gap-2 flex-wrap shrink-0">
-       {sortedColors.map((color, idx) => {
-        const isSelected = currentColor && currentColor.serialNumber === color.serialNumber;
-        return (
-         <button
-          key={color.serialNumber || idx}
-          onClick={(e) => {
-           e.preventDefault();
-           e.stopPropagation();
-           handleColorChange(color);
-          }}
-          className={`w-8 h-8 rounded-full border-2 transition-all cursor-pointer hover:scale-110 ${isSelected
-           ? "border-indigo-600 scale-110 ring-2 ring-indigo-200"
-           : "border-gray-200 hover:border-gray-300"
-           }`}
-          style={{ backgroundColor: getColorHex(color) }}
-          title={color.name}
-          aria-label={`${color.name} rengini seç`}
-         />
-        );
-       })}
-      </div>
-     )}
     </div>
    </div>
-   <Toast toast={toast} setToast={setToast} />
   </div>
  );
 }

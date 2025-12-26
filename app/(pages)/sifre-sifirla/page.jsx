@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { HiLockClosed, HiMail } from "react-icons/hi";
+import { HiLockClosed, HiMail, HiArrowLeft } from "react-icons/hi";
 import { MdError, MdCheckCircle } from "react-icons/md";
 
 export default function SifreSifirlaPage() {
@@ -172,9 +172,10 @@ export default function SifreSifirlaPage() {
       <div className="mt-6 text-center">
        <Link
         href="/giris"
-        className="text-indigo-600 hover:text-indigo-800 font-semibold text-sm"
+        className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition-colors duration-200"
        >
-        ← Giriş Sayfasına Dön
+        <HiArrowLeft size={18} />
+        Giriş Sayfasına Dön
        </Link>
       </div>
      </div>

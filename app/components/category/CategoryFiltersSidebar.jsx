@@ -18,12 +18,12 @@ export default function CategoryFiltersSidebar({
 
  return (
   <aside className="hidden lg:block w-72 shrink-0">
-   <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
+   <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
     <div className="flex justify-between items-center mb-6">
      <h3 className="font-bold text-lg">Filtreler</h3>
      <button
       onClick={onClearFilters}
-      className="text-sm text-indigo-600 hover:text-indigo-800"
+      className="text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer"
      >
       Temizle
      </button>

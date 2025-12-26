@@ -84,9 +84,12 @@ export default function ProductAllFeatures({ product, selectedColor = null }) {
   spec => spec.category && spec.category.toLowerCase().trim() === "genel özellikler"
  );
 
- // "Boyutlar" kategorisini bul
+ // "Boyutlar" veya "Boyutlar ve Ağırlık" kategorisini bul
  const boyutlarIndex = allSpecifications.findIndex(
-  spec => spec.category && spec.category.toLowerCase().trim() === "boyutlar"
+  spec => {
+   const categoryLower = spec.category && spec.category.toLowerCase().trim();
+   return categoryLower === "boyutlar" || categoryLower === "boyutlar ve ağırlık";
+  }
  );
 
  let processedSpecifications = [...allSpecifications];
@@ -135,6 +138,10 @@ export default function ProductAllFeatures({ product, selectedColor = null }) {
   ];
  }
 
+ // TV ürünleri için "Boyutlar", diğerleri için "Boyutlar ve Ağırlık" kullan
+ const isTelevizyon = product.category && product.category.toLowerCase().trim() === "televizyon";
+ const boyutlarCategoryName = isTelevizyon ? "Boyutlar" : "Boyutlar ve Ağırlık";
+
  if (boyutlarIndex !== -1) {
   const existingBoyutlarItems = processedSpecifications[boyutlarIndex].items || [];
   const existingKeys = existingBoyutlarItems.map(item => item.key);
@@ -142,14 +149,14 @@ export default function ProductAllFeatures({ product, selectedColor = null }) {
   if (newItems.length > 0) {
    processedSpecifications[boyutlarIndex] = {
     ...processedSpecifications[boyutlarIndex],
-    category: "Boyutlar ve Ağırlık",
+    category: boyutlarCategoryName,
     items: [...existingBoyutlarItems, ...newItems]
    };
   } else {
    // Başlığı güncelle
    processedSpecifications[boyutlarIndex] = {
     ...processedSpecifications[boyutlarIndex],
-    category: "Boyutlar ve Ağırlık"
+    category: boyutlarCategoryName
    };
   }
  } else if (boyutlarItems.length > 0) {
@@ -157,10 +164,10 @@ export default function ProductAllFeatures({ product, selectedColor = null }) {
    spec => spec.category && spec.category.toLowerCase().trim() === "genel özellikler"
   );
   if (genelIndex !== -1) {
-   processedSpecifications.splice(genelIndex + 1, 0, { category: "Boyutlar ve Ağırlık", items: boyutlarItems });
+   processedSpecifications.splice(genelIndex + 1, 0, { category: boyutlarCategoryName, items: boyutlarItems });
   } else {
    processedSpecifications = [
-    { category: "Boyutlar ve Ağırlık", items: boyutlarItems },
+    { category: boyutlarCategoryName, items: boyutlarItems },
     ...processedSpecifications
    ];
   }

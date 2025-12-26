@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { MdCreditCard } from "react-icons/md";
+import { MdCreditCard, MdAccountBalance, MdLocalShipping } from "react-icons/md";
 import PaymentCardCard from "./PaymentCardCard";
 
 export default function PaymentMethodSection({
@@ -26,6 +26,7 @@ export default function PaymentMethodSection({
        checked={paymentMethod.type === "card"}
        onChange={() => onPaymentMethodChange((prev) => ({ type: "card", cardId: prev.type === "card" ? prev.cardId : "" }))}
       />
+      <MdCreditCard className="text-indigo-600" size={20} />
       Kart ile Öde
      </label>
 
@@ -67,6 +68,37 @@ export default function PaymentMethodSection({
      )}
     </div>
 
+    <div className={`border rounded-xl p-4 ${paymentMethod.type === "havale" ? "border-indigo-300 bg-indigo-50" : "border-gray-200"}`}>
+     <label className="flex items-center gap-2 font-semibold text-gray-900 cursor-pointer">
+      <input
+       type="radio"
+       name="payment"
+       checked={paymentMethod.type === "havale"}
+       onChange={() => onPaymentMethodChange({ type: "havale" })}
+      />
+      <MdAccountBalance className="text-indigo-600" size={20} />
+      Havale ve EFT ile Ödeme
+     </label>
+
+     {paymentMethod.type === "havale" && (
+      <div className="mt-4 space-y-2">
+       <p className="text-sm text-gray-600">
+        IBAN&apos;a para transferi yaparak ödeme yapabilirsiniz.
+       </p>
+       <div className="bg-gray-50 rounded-lg p-3 space-y-1.5 mt-3">
+        <div className="text-sm">
+         <span className="font-semibold text-gray-700">IBAN: </span>
+         <span className="text-gray-900 font-mono">TR33 0006 1005 0000 0006 6123 45</span>
+        </div>
+        <div className="text-sm">
+         <span className="font-semibold text-gray-700">Alıcı Adı ve Soyadı: </span>
+         <span className="text-gray-900">İlhan Yazıcı</span>
+        </div>
+       </div>
+      </div>
+     )}
+    </div>
+
     <div className={`border rounded-xl p-4 ${paymentMethod.type === "cash" ? "border-indigo-300 bg-indigo-50" : "border-gray-200"}`}>
      <label className="flex items-center gap-2 font-semibold text-gray-900 cursor-pointer">
       <input
@@ -75,6 +107,7 @@ export default function PaymentMethodSection({
        checked={paymentMethod.type === "cash"}
        onChange={() => onPaymentMethodChange({ type: "cash" })}
       />
+      <MdLocalShipping className="text-indigo-600" size={20} />
       Kapıda Ödeme
      </label>
      <p className="text-sm text-gray-600 mt-2">

@@ -70,8 +70,6 @@ export default function KategoriPage() {
  const slugString = useMemo(() => slug.join('/'), [slug]);
 
  // Ürün detay sayfası kontrolü: 
- // - 3 parça: category/subcategory/serialNumber
- // - 2 parça: category/serialNumber (alt kategori yoksa)
  const isProductDetailPage = useMemo(() => {
   if (slug.length === 3) {
    // category/subcategory/serialNumber formatı
@@ -171,7 +169,16 @@ export default function KategoriPage() {
    }
 
    if (subCategory) url += `&subCategory=${encodeURIComponent(subCategory)}`;
-   if (filters.sortBy) url += `&sort=${filters.sortBy}`;
+
+   // Öne Çıkan Ürünler filtresi için API'ye isFeatured parametresi gönder
+   if (filters.sortBy === "filter:featured") {
+    url += `&isFeatured=true`;
+   }
+
+   // Sadece gerçek sıralama değerlerini API'ye gönder (filtre değerlerini değil)
+   if (filters.sortBy && !filters.sortBy.startsWith('filter:')) {
+    url += `&sort=${filters.sortBy}`;
+   }
 
    const res = await fetch(url);
    const data = await res.json();
@@ -185,21 +192,27 @@ export default function KategoriPage() {
      );
     }
 
-    if (filters.minPrice) {
-     filteredProducts = filteredProducts.filter(
-      (p) => {
-       const finalPrice = (p.discountPrice && p.discountPrice < p.price) ? p.discountPrice : p.price;
-       return finalPrice >= parseFloat(filters.minPrice);
-      }
-     );
+    if (filters.minPrice && filters.minPrice !== "") {
+     const minPriceValue = parseFloat(filters.minPrice);
+     if (!isNaN(minPriceValue)) {
+      filteredProducts = filteredProducts.filter(
+       (p) => {
+        const finalPrice = (p.discountPrice && p.discountPrice < p.price) ? p.discountPrice : p.price;
+        return finalPrice >= minPriceValue;
+       }
+      );
+     }
     }
-    if (filters.maxPrice) {
-     filteredProducts = filteredProducts.filter(
-      (p) => {
-       const finalPrice = (p.discountPrice && p.discountPrice < p.price) ? p.discountPrice : p.price;
-       return finalPrice <= parseFloat(filters.maxPrice);
-      }
-     );
+    if (filters.maxPrice && filters.maxPrice !== "") {
+     const maxPriceValue = parseFloat(filters.maxPrice);
+     if (!isNaN(maxPriceValue)) {
+      filteredProducts = filteredProducts.filter(
+       (p) => {
+        const finalPrice = (p.discountPrice && p.discountPrice < p.price) ? p.discountPrice : p.price;
+        return finalPrice <= maxPriceValue;
+       }
+      );
+     }
     }
 
 
@@ -219,6 +232,17 @@ export default function KategoriPage() {
      }
     }
 
+    // SortBy filter: Yeni Ürünler, İndirimli Ürünler ve Öne Çıkan Ürünler filtreleri
+    if (filters.sortBy === "filter:new") {
+     filteredProducts = filteredProducts.filter(p => p.isNew === true);
+    } else if (filters.sortBy === "filter:discounted") {
+     filteredProducts = filteredProducts.filter(p =>
+      p.discountPrice && p.discountPrice > 0 && p.discountPrice < p.price
+     );
+    } else if (filters.sortBy === "filter:featured") {
+     filteredProducts = filteredProducts.filter(p => p.isFeatured === true);
+    }
+
     setProducts(filteredProducts);
 
     // Extract unique brands
@@ -228,6 +252,7 @@ export default function KategoriPage() {
     // Extract unique categories (only for "yeniler" and "indirim" pages)
     if (categorySlug === "yeni" || categorySlug === "yeniler" || categorySlug === "indirim") {
      const categories = [...new Set(data.data.map((p) => p.category).filter(Boolean))];
+     categories.sort((a, b) => a.localeCompare(b, 'tr'));
      setAvailableCategories(categories);
     } else {
      setAvailableCategories([]);
@@ -451,15 +476,25 @@ export default function KategoriPage() {
  };
 
  const clearFilters = () => {
+  const hasActiveFilters =
+   (slug.length > 1) ||
+   (filters.minPrice && filters.minPrice !== "") ||
+   (filters.maxPrice && filters.maxPrice !== "") ||
+   (filters.brands && filters.brands.length > 0) ||
+   (filters.categories && filters.categories.length > 0);
+
+  if (!hasActiveFilters) {
+   return;
+  }
+
   setFilters({
+   ...filters,
    minPrice: "",
    maxPrice: "",
    brands: [],
    categories: [],
-   sortBy: "-createdAt",
   });
 
-  // Eğer alt kategori seçiliyse, ana kategoriye yönlendir
   if (slug.length > 1) {
    const categorySlug = decodeURIComponent(slug[0]);
    router.push(`/kategori/${categorySlug}`);
@@ -479,7 +514,6 @@ export default function KategoriPage() {
   let mainCat = "";
   let subCat = "";
 
-  // Önce MENU_ITEMS'de ana kategoriyi ara
   let mainMenuItem = MENU_ITEMS.find(item => {
    const itemPath = item.path.replace('/kategori/', '');
    return itemPath === decodedSlug;
@@ -488,13 +522,10 @@ export default function KategoriPage() {
   if (mainMenuItem) {
    mainCat = mainMenuItem.name;
   } else {
-   // Ana kategoride bulunamadıysa, alt kategorilerde ara (eski URL formatı için)
    for (const menuItem of MENU_ITEMS) {
     if (menuItem.subCategories) {
      const subCatItem = menuItem.subCategories.find(sub => {
       const subPath = sub.path.replace('/kategori/', '');
-      // Yeni format: /kategori/beyaz-esya/buzdolabi
-      // Eski format: /kategori/buzdolabi
       return subPath === decodedSlug || subPath.endsWith('/' + decodedSlug);
      });
      if (subCatItem) {
@@ -506,17 +537,14 @@ export default function KategoriPage() {
     }
    }
 
-   // Hala bulunamadıysa fallback kullan
    if (!mainCat) {
     mainCat = categoryNames[decodedSlug] || decodedSlug;
    }
   }
 
-  // Alt kategori varsa (yeni format: /kategori/beyaz-esya/buzdolabi)
   if (slug.length > 1) {
    const decodedSubSlug = decodeURIComponent(slug[1]);
 
-   // Ana kategoriyi bul (eğer bulunamadıysa)
    if (!mainMenuItem) {
     mainMenuItem = MENU_ITEMS.find(item => {
      const itemPath = item.path.replace('/kategori/', '');
@@ -541,11 +569,9 @@ export default function KategoriPage() {
    return subCat || mainCat;
   }
 
-  // Sadece ana kategori veya alt kategori (eski format)
   return subCat || mainCat;
  };
 
- // Ürün detay sayfası için renk bazlı bilgiler (sadece ürün detay sayfasında hesapla)
  let currentColorObj = null;
  let colorPrice = 0;
  let colorDiscountPrice = null;
@@ -575,6 +601,10 @@ export default function KategoriPage() {
  }
 
  const handleColorSelect = (colorName) => {
+  if (selectedColor === colorName) {
+   return;
+  }
+
   setSelectedColor(colorName);
   const color = product?.colors?.find(c => {
    if (typeof c === 'object') {
@@ -586,17 +616,13 @@ export default function KategoriPage() {
    setSelectedColorObj(color);
    setSelectedImage(0);
 
-   // URL'yi güncelle - yeni renk varyantının serialNumber'ı ile
    const newSerialNumber = color.serialNumber;
-   if (newSerialNumber) {
+   const currentSerialNumber = slug[slug.length - 1];
+   if (newSerialNumber && newSerialNumber !== currentSerialNumber) {
     if (slug.length === 3) {
-     // Mevcut URL: /kategori/category/subcategory/oldSerialNumber
-     // Yeni URL: /kategori/category/subcategory/newSerialNumber
      const newUrl = `/kategori/${slug[0]}/${slug[1]}/${newSerialNumber}`;
      router.push(newUrl);
     } else if (slug.length === 2) {
-     // Mevcut URL: /kategori/category/oldSerialNumber
-     // Yeni URL: /kategori/category/newSerialNumber
      const newUrl = `/kategori/${slug[0]}/${newSerialNumber}`;
      router.push(newUrl);
     }
@@ -606,13 +632,10 @@ export default function KategoriPage() {
   }
  };
 
- // Kategori listesi sayfası için ürün sayısı hesaplama
- // Her ürünü tek bir ürün olarak say (renk varyantları ayrı sayılmaz)
  const expandedProductsCount = useMemo(() => {
   return products.length;
  }, [products]);
 
- // Ürün detay sayfası göster
  if (isProductDetailPage) {
   if (loading) {
    return <ProductLoading />;
@@ -629,17 +652,19 @@ export default function KategoriPage() {
     <div className="container mx-auto px-4">
      <ProductBreadcrumb product={product} />
 
-     <div className="grid lg:grid-cols-2 gap-12">
-      <ProductImageGallery
-       images={colorImages}
-       selectedImage={selectedImage}
-       onImageSelect={setSelectedImage}
-       isNew={product.isNew}
-       discountPercentage={discountPercentage}
-       productName={product.name}
-      />
+     <div className="grid lg:grid-cols-3 gap-8">
+      <div className="lg:col-span-1">
+       <ProductImageGallery
+        images={colorImages}
+        selectedImage={selectedImage}
+        onImageSelect={setSelectedImage}
+        isNew={product.isNew}
+        discountPercentage={discountPercentage}
+        productName={product.name}
+       />
+      </div>
 
-      <div>
+      <div className="lg:col-span-2">
        {product.brand && (
         <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">
          {product.brand}
@@ -758,8 +783,8 @@ export default function KategoriPage() {
       availableBrands={availableBrands}
       availableCategories={availableCategories}
       onClearFilters={clearFilters}
-      onMinPriceChange={(value) => setFilters({ ...filters, minPrice: value })}
-      onMaxPriceChange={(value) => setFilters({ ...filters, maxPrice: value })}
+      onMinPriceChange={(value) => setFilters((prev) => ({ ...prev, minPrice: value }))}
+      onMaxPriceChange={(value) => setFilters((prev) => ({ ...prev, maxPrice: value }))}
       onBrandToggle={handleBrandToggle}
       onCategoryToggle={handleCategoryToggle}
      />
@@ -769,6 +794,7 @@ export default function KategoriPage() {
        sortBy={filters.sortBy}
        onSortChange={(value) => setFilters({ ...filters, sortBy: value })}
        onFiltersClick={() => setShowFilters(true)}
+       slug={slug}
       />
 
       <CategoryProducts
@@ -789,8 +815,8 @@ export default function KategoriPage() {
     availableCategories={availableCategories}
     onClose={() => setShowFilters(false)}
     onClearFilters={clearFilters}
-    onMinPriceChange={(value) => setFilters({ ...filters, minPrice: value })}
-    onMaxPriceChange={(value) => setFilters({ ...filters, maxPrice: value })}
+    onMinPriceChange={(value) => setFilters((prev) => ({ ...prev, minPrice: value }))}
+    onMaxPriceChange={(value) => setFilters((prev) => ({ ...prev, maxPrice: value }))}
     onBrandToggle={handleBrandToggle}
     onCategoryToggle={handleCategoryToggle}
    />

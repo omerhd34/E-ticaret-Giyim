@@ -60,7 +60,7 @@ export default function CategoryFiltersModal({
     <div className="sticky bottom-0 bg-white border-t p-4">
      <button
       onClick={onClearFilters}
-      className="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold"
+      className="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold "
      >
       Temizle
      </button>

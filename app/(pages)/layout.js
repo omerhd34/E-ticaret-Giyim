@@ -1,28 +1,23 @@
 "use client";
-import "../globals.css";
 import Header from "../components/ui/Header";
 import Footer from "../components/ui/Footer";
 import ScrollToTop from "../components/ui/ScrollToTop";
 import ComparisonWidget from "../components/ui/ComparisonWidget";
-import { CartProvider } from "@/context/CartContext";
-import { ComparisonProvider } from "@/context/ComparisonContext";
+import { usePathname } from "next/navigation";
 
-export default function RootLayout({ children }) {
+export default function PagesLayout({ children }) {
+ const pathname = usePathname();
+ const isAdminPage = pathname?.startsWith("/admin");
+
  return (
-  <html lang="tr">
-   <body className="antialiased min-h-screen flex flex-col">
-    <CartProvider>
-     <ComparisonProvider>
-      <Header />
-      <div className="flex-1">
-       {children}
-      </div>
-      <Footer />
-      <ScrollToTop />
-      <ComparisonWidget />
-     </ComparisonProvider>
-    </CartProvider>
-   </body>
-  </html>
+  <>
+   {!isAdminPage && <Header />}
+   <div className="flex-1">
+    {children}
+   </div>
+   {!isAdminPage && <Footer />}
+   {!isAdminPage && <ScrollToTop />}
+   {!isAdminPage && <ComparisonWidget />}
+  </>
  );
 }

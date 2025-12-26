@@ -30,8 +30,8 @@ export default function ProductActions({
    <button
     onClick={onComparisonToggle}
     className={`p-4 rounded-lg border-2 transition cursor-pointer ${isInComparison
-     ? "border-indigo-600 bg-indigo-600 text-white"
-     : "border-gray-200 bg-white text-gray-400 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-600"
+     ? "border-green-700 bg-green-700 text-white"
+     : "border-gray-300 bg-white text-gray-500 hover:border-green-400 hover:bg-indigo-50 hover:text-green-400"
      }`}
     title={isInComparison ? "Karşılaştırmadan Çıkar" : "Karşılaştırmaya Ekle"}
    >

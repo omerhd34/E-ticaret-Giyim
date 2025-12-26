@@ -1,16 +1,26 @@
 "use client";
 
-export default function CardCard({ card, onDelete, onSetDefault, showToast, fetchCards }) {
+export default function CardCard({ card, onDelete, onSetDefault, onEdit, showToast, fetchCards }) {
  return (
   <div
    className={`border-2 rounded-xl p-6 relative ${card.isDefault ? "border-indigo-600 bg-indigo-50" : "border-gray-200"
     }`}
   >
-   {card.isDefault && (
-    <span className="absolute top-4 right-4 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded">
-     Varsayılan
-    </span>
-   )}
+   <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
+    {card.isDefault && (
+     <span className="bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded">
+      Varsayılan
+     </span>
+    )}
+    {onEdit && (
+     <button
+      onClick={() => onEdit(card)}
+      className="bg-gray-600 hover:bg-gray-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition cursor-pointer"
+     >
+      Değiştir
+     </button>
+    )}
+   </div>
    <div className="mb-4">
     <p className="text-sm text-gray-500 mb-1">Kart Adı:</p>
     <p className="font-semibold text-gray-800">{card.cardName}</p>

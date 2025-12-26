@@ -38,9 +38,8 @@ export default function CategoryProducts({ loading, products, sortBy, onClearFil
 
  // Her ürünü tek bir kart olarak göster (renk varyantları kart içinde gösterilecek)
  const expandedProducts = products.map((product, originalIndex) => {
-  // En düşük fiyatı bul (sıralama için)
   let finalPrice = (product.discountPrice && product.discountPrice < product.price) ? product.discountPrice : product.price;
-  
+
   if (product.colors && product.colors.length > 0) {
    // Tüm renk varyantları arasından en düşük fiyatı bul
    const colorPrices = product.colors
@@ -50,7 +49,7 @@ export default function CategoryProducts({ loading, products, sortBy, onClearFil
      const colorDiscountPrice = color.discountPrice !== undefined ? color.discountPrice : product.discountPrice;
      return (colorDiscountPrice && colorDiscountPrice < colorPrice) ? colorDiscountPrice : colorPrice;
     });
-   
+
    if (colorPrices.length > 0) {
     finalPrice = Math.min(...colorPrices, finalPrice);
    }
@@ -63,9 +62,9 @@ export default function CategoryProducts({ loading, products, sortBy, onClearFil
   };
  });
 
- // Sıralama yap (eğer sortBy varsa)
+ // Sıralama yap (eğer sortBy varsa ve filtre değilse)
  let sortedProducts = expandedProducts;
- if (sortBy) {
+ if (sortBy && !sortBy.startsWith('filter:')) {
   sortedProducts = [...expandedProducts].sort((a, b) => {
    if (sortBy === 'price') {
     // Fiyat: Düşükten Yükseğe

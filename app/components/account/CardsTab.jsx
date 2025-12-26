@@ -7,7 +7,7 @@ export default function CardsTab({ cards, onAddNew, onEdit, onDelete, showToast,
  return (
   <div className="bg-white rounded-xl shadow-sm p-6">
    <div className="flex justify-between items-center mb-6">
-    <h2 className="text-2xl font-bold">Kayıtlı Kartlarım</h2>
+    <h2 className="text-2xl font-bold">Kredi / Banka Kartlarım</h2>
     <button
      onClick={onAddNew}
      className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition cursor-pointer"
@@ -32,6 +32,7 @@ export default function CardsTab({ cards, onAddNew, onEdit, onDelete, showToast,
        key={card._id}
        card={card}
        onDelete={onDelete}
+       onEdit={onEdit}
        onSetDefault={async () => {
         try {
          const cardId = card._id?.toString ? card._id.toString() : card._id;

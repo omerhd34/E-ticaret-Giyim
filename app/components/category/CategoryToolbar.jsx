@@ -1,7 +1,12 @@
 "use client";
 import { HiAdjustments, HiChevronDown } from "react-icons/hi";
 
-export default function CategoryToolbar({ sortBy, onSortChange, onFiltersClick }) {
+export default function CategoryToolbar({ sortBy, onSortChange, onFiltersClick, slug = [] }) {
+ // Kategori slug'ını kontrol et
+ const categorySlug = slug.length > 0 ? decodeURIComponent(slug[0]) : "";
+ const isYenilerPage = categorySlug === "yeni" || categorySlug === "yeniler";
+ const isIndirimPage = categorySlug === "indirim";
+
  return (
   <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex justify-between items-center flex-wrap gap-4">
    <button
@@ -20,7 +25,10 @@ export default function CategoryToolbar({ sortBy, onSortChange, onFiltersClick }
       onChange={(e) => onSortChange(e.target.value)}
       className="appearance-none border border-gray-300 rounded-lg pl-4 pr-10 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
      >
-      <option value="-createdAt">Yeni Ürünler</option>
+      <option value="-createdAt">Önerilen</option>
+      {!isYenilerPage && !isIndirimPage && <option value="filter:new">Yeni Ürünler</option>}
+      {!isIndirimPage && !isYenilerPage && <option value="filter:discounted">İndirimli Ürünler</option>}
+      <option value="filter:featured">Öne Çıkan Ürünler</option>
       <option value="price">Fiyat: Düşükten Yükseğe</option>
       <option value="-price">Fiyat: Yüksekten Düşüğe</option>
       <option value="-rating">En Yüksek Puan</option>
@@ -31,6 +39,6 @@ export default function CategoryToolbar({ sortBy, onSortChange, onFiltersClick }
      </span>
     </div>
    </div>
-  </div>
+  </div >
  );
 }

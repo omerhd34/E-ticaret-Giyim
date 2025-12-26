@@ -60,7 +60,7 @@ export default function ProductImageGallery({
      )}
      {discountPercentage > 0 && (
       <span className="absolute top-4 right-4 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full z-10">
-       %{discountPercentage} İNDİRİM
+       İNDİRİM
       </span>
      )}
      <Image
@@ -70,7 +70,7 @@ export default function ProductImageGallery({
       alt={productName}
       quality={95}
       priority={selectedImage === 0}
-      className="w-full h-full object-contain p-10"
+      className="w-full h-full object-contain p-6"
      />
     </div>
 

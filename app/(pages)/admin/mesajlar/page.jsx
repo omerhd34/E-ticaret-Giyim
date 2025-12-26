@@ -220,7 +220,7 @@ export default function AdminMesajlarPage() {
           <p className="text-sm text-gray-500">Yükleniyor...</p>
          </div>
         ) : filteredContacts.length === 0 ? (
-         <div className="text-center py-12 text-gray-500">
+         <div className="text-center py-20 text-gray-500">
           <HiMail size={56} className="mx-auto mb-3 text-gray-300" />
           <p className="font-medium">Mesaj bulunamadı</p>
          </div>

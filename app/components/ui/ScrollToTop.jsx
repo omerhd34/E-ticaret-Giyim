@@ -4,8 +4,17 @@ import { HiArrowUp } from "react-icons/hi";
 
 export default function ScrollToTop() {
  const [isVisible, setIsVisible] = useState(false);
+ const [mounted, setMounted] = useState(false);
+
+ // Client-side mount kontrolü
+ useEffect(() => {
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  setMounted(true);
+ }, []);
 
  useEffect(() => {
+  if (!mounted) return;
+
   const toggleVisibility = () => {
    if (window.pageYOffset > 300) {
     setIsVisible(true);
@@ -14,12 +23,15 @@ export default function ScrollToTop() {
    }
   };
 
+  // İlk kontrol
+  toggleVisibility();
+
   window.addEventListener("scroll", toggleVisibility);
 
   return () => {
    window.removeEventListener("scroll", toggleVisibility);
   };
- }, []);
+ }, [mounted]);
 
  const scrollToTop = () => {
   window.scrollTo({
@@ -27,6 +39,11 @@ export default function ScrollToTop() {
    behavior: "smooth",
   });
  };
+
+ // Server-side render'da hiçbir şey render etme
+ if (!mounted) {
+  return null;
+ }
 
  return (
   <>

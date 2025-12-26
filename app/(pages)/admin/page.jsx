@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
@@ -13,19 +12,43 @@ import AdminStatsCards from "@/app/components/admin/AdminStatsCards";
 export default function AdminHomePage() {
  const router = useRouter();
  const [authLoading, setAuthLoading] = useState(true);
+ const [isAuthenticated, setIsAuthenticated] = useState(false);
  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
  const [dashboardLoading, setDashboardLoading] = useState(true);
  const [stats, setStats] = useState(null);
  const [recentOrders, setRecentOrders] = useState([]);
 
  useEffect(() => {
+  const checkAuthQuick = async () => {
+   try {
+    const checkRes = await axiosInstance.get("/api/auth/check");
+    const checkData = checkRes.data;
+    if (!checkData?.authenticated) {
+     router.replace("/admin-giris");
+     return;
+    }
+    setIsAuthenticated(true);
+   } catch {
+    router.replace("/admin-giris");
+   }
+  };
+  checkAuthQuick();
+ }, [router]);
+
+ useEffect(() => {
+  window.scrollTo({ top: 0, behavior: "instant" });
+ }, []);
+
+ useEffect(() => {
+  if (!isAuthenticated) return;
+
   (async () => {
    try {
     const checkRes = await axiosInstance.get("/api/auth/check");
     const checkData = checkRes.data;
 
     if (!checkData?.authenticated) {
-     router.push("/admin-giris");
+     router.replace("/admin-giris");
      return;
     }
 
@@ -37,7 +60,7 @@ export default function AdminHomePage() {
      ]);
 
      if (statsRes.status === 401 || !statsRes.data?.success) {
-      router.push("/admin-giris");
+      router.replace("/admin-giris");
       return;
      }
 
@@ -54,7 +77,7 @@ export default function AdminHomePage() {
      }
     } catch (e) {
      if (e.response?.status === 401) {
-      router.push("/admin-giris");
+      router.replace("/admin-giris");
       return;
      }
      setStats(null);
@@ -63,38 +86,41 @@ export default function AdminHomePage() {
      setDashboardLoading(false);
     }
    } catch {
-    router.push("/admin-giris");
+    router.replace("/admin-giris");
     return;
    } finally {
     setAuthLoading(false);
    }
   })();
- }, [router]);
+ }, [router, isAuthenticated]);
 
- const handleLogout = async () => {
-  try {
-   await axiosInstance.post("/api/auth/logout");
-   router.push("/admin-giris");
-  } catch {
-   setToast({ show: true, message: "Çıkış yapılamadı", type: "error" });
+ useEffect(() => {
+  if (!authLoading) {
+   window.scrollTo({ top: 0, behavior: "instant" });
   }
- };
+ }, [authLoading]);
+
+ if (!isAuthenticated) {
+  return null;
+ }
 
  if (authLoading) {
   return <AdminHomeLoading />;
  }
 
  return (
-  <div className="min-h-screen bg-gray-50 px-4 py-20">
-   <div className="w-full max-w-7xl mx-auto">
-    <Toast toast={toast} setToast={setToast} />
+  <div className="px-4 flex-1 flex flex-col">
+   <div className="flex-1 flex flex-col justify-center py-20">
+    <div className="w-full max-w-7xl mx-auto">
+     <Toast toast={toast} setToast={setToast} />
 
-    <div className="bg-white rounded-2xl shadow-xl overflow-hidden border">
-     <AdminHomeHeader onLogout={handleLogout} />
+     <div className="bg-white rounded-3xl shadow-xl overflow-hidden border">
+      <AdminHomeHeader />
 
-     <div className="p-8 space-y-8">
-      <QuickAccessCards />
-      <AdminStatsCards stats={stats} loading={dashboardLoading} />
+      <div className="p-8 space-y-8">
+       <QuickAccessCards />
+       <AdminStatsCards stats={stats} loading={dashboardLoading} />
+      </div>
      </div>
     </div>
    </div>

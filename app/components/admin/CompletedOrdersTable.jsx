@@ -39,7 +39,7 @@ export default function CompletedOrdersTable({
          key={f.key}
          type="button"
          onClick={() => onFilterChange(f.key)}
-         className={`px-3 py-2 rounded-full text-xs font-semibold border transition
+         className={`px-3 py-2 rounded-full text-xs font-semibold border transition cursor-pointer
           ${active
            ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
            : "bg-white border-gray-200 text-gray-700 hover:border-slate-300 hover:bg-gray-50"
@@ -68,7 +68,7 @@ export default function CompletedOrdersTable({
         key={f.key}
         type="button"
         onClick={() => onFilterChange(f.key)}
-        className={`px-3 py-2 rounded-full text-xs font-semibold border transition
+        className={`px-3 py-2 rounded-full text-xs font-semibold border transition cursor-pointer
          ${active
           ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
           : "bg-white border-gray-200 text-gray-700 hover:border-slate-300 hover:bg-gray-50"

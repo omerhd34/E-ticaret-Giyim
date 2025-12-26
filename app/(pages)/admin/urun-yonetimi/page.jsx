@@ -95,11 +95,23 @@ export default function AdminUrunYonetimiPage() {
 
  const handleDeleteProduct = async (productId, colorSerialNumber = null) => {
   const isColorVariant = colorSerialNumber !== null;
+
+  // Eğer renk varyantı siliniyorsa, ürünün kaç renk varyantı olduğunu kontrol et
+  let confirmMessage = "Bu ürünü silmek istediğinize emin misiniz?";
+  if (isColorVariant) {
+   const product = products.find(p => p._id === productId);
+   const colorCount = product?.colors?.filter(c => typeof c === 'object' && c.serialNumber)?.length || 0;
+   // Eğer sadece 1 renk varyantı varsa, tüm ürün silineceği için "ürün" mesajı göster
+   if (colorCount === 1) {
+    confirmMessage = "Bu ürünü silmek istediğinize emin misiniz?";
+   } else {
+    confirmMessage = "Bu renk varyantını silmek istediğinize emin misiniz?";
+   }
+  }
+
   setConfirmDialog({
    show: true,
-   message: isColorVariant
-    ? "Bu renk varyantını silmek istediğinize emin misiniz?"
-    : "Bu ürünü silmek istediğinize emin misiniz?",
+   message: confirmMessage,
    onConfirm: async () => {
     try {
      let url = `/api/products/${productId}`;
@@ -111,7 +123,10 @@ export default function AdminUrunYonetimiPage() {
       setToast({ show: true, message: res.data?.message || (isColorVariant ? "Renk varyantı silinemedi" : "Ürün silinemedi"), type: "error" });
       return;
      }
-     setToast({ show: true, message: isColorVariant ? "Renk varyantı silindi" : "Ürün silindi", type: "success" });
+     // API'den dönen yanıta göre mesajı belirle
+     const deletedType = res.data?.data?.deleted;
+     const successMessage = deletedType === 'product' ? "Ürün silindi" : (deletedType === 'colorVariant' ? "Renk varyantı silindi" : (isColorVariant ? "Renk varyantı silindi" : "Ürün silindi"));
+     setToast({ show: true, message: successMessage, type: "success" });
      fetchProducts();
     } catch {
      setToast({ show: true, message: isColorVariant ? "Renk varyantı silinemedi" : "Ürün silinemedi", type: "error" });

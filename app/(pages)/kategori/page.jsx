@@ -190,7 +190,7 @@ export default function KategoriPage() {
         {activeFilterCount > 0 && (
          <button
           onClick={clearFilters}
-          className="text-sm text-indigo-600 hover:text-indigo-800 font-semibold"
+          className="text-sm text-indigo-600 hover:text-indigo-800 font-semibold "
          >
           Temizle
          </button>
