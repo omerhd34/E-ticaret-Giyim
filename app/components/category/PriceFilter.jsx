@@ -4,16 +4,23 @@ import { useState, useLayoutEffect, useRef, useMemo } from "react";
 import { HiSearch, HiChevronUp, HiChevronDown } from "react-icons/hi";
 
 const PRICE_RANGES = [
- { label: "0 - 10000 TL", min: 0, max: 10000 },
- { label: "10000 - 15000 TL", min: 10000, max: 15000 },
- { label: "15000 - 20000 TL", min: 15000, max: 20000 },
- { label: "20000 - 30000 TL", min: 20000, max: 30000 },
- { label: "30000 - 45000 TL", min: 30000, max: 45000 },
- { label: "45000 - 70000 TL", min: 45000, max: 70000 },
+ { label: "0 - 9999 TL", min: 0, max: 9999 },
+ { label: "10000 - 14999 TL", min: 10000, max: 14999 },
+ { label: "15000 - 19999 TL", min: 15000, max: 19999 },
+ { label: "20000 - 29999 TL", min: 20000, max: 29999 },
+ { label: "30000 - 44999 TL", min: 30000, max: 44999 },
+ { label: "45000 - 69999 TL", min: 45000, max: 69999 },
  { label: "70000 TL üzerinde", min: 70000, max: null },
 ];
 
-export default function PriceFilter({ minPrice, maxPrice, onMinPriceChange, onMaxPriceChange, isMobile = false }) {
+const SMALL_PRICE_RANGES = [
+ { label: "0 - 4999 TL", min: 0, max: 4999 },
+ { label: "5000 - 9999 TL", min: 5000, max: 9999 },
+ { label: "10000 - 14999 TL", min: 10000, max: 14999 },
+ { label: "15000 TL üzerinde", min: 15000, max: null },
+];
+
+export default function PriceFilter({ minPrice, maxPrice, onMinPriceChange, onMaxPriceChange, isMobile = false, slug = [] }) {
  const [isExpanded, setIsExpanded] = useState(true);
  const [localMinPrice, setLocalMinPrice] = useState(minPrice || "");
  const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice || "");
@@ -22,9 +29,19 @@ export default function PriceFilter({ minPrice, maxPrice, onMinPriceChange, onMa
  const prevMinPrice = useRef(minPrice);
  const prevMaxPrice = useRef(maxPrice);
 
+ const isSmall = useMemo(() => {
+  if (!slug || slug.length === 0) return false;
+  const categorySlug = Array.isArray(slug) ? slug[0] : slug;
+  const slugLower = categorySlug?.toLowerCase() || "";
+  return slugLower.includes("elektrikli-supurge") || slugLower.includes("su-sebili") ||
+   slugLower.includes("su-aritma") || slugLower.includes("kahve");
+ }, [slug]);
+
+ const priceRanges = isSmall ? SMALL_PRICE_RANGES : PRICE_RANGES;
+
  const computedSelectedRange = useMemo(() => {
   if (minPrice) {
-   const matchingRange = PRICE_RANGES.find((range) => {
+   const matchingRange = priceRanges.find((range) => {
     const minMatch = range.min.toString() === minPrice;
     if (range.max === null) {
      return minMatch && (!maxPrice || maxPrice === "");
@@ -35,7 +52,7 @@ export default function PriceFilter({ minPrice, maxPrice, onMinPriceChange, onMa
    return matchingRange ? matchingRange.label : null;
   }
   return null;
- }, [minPrice, maxPrice]);
+ }, [minPrice, maxPrice, priceRanges]);
 
  useLayoutEffect(() => {
   if (isInternalUpdate.current) {
@@ -131,7 +148,7 @@ export default function PriceFilter({ minPrice, maxPrice, onMinPriceChange, onMa
      </div>
 
      <div className="space-y-2">
-      {PRICE_RANGES.map((range) => (
+      {priceRanges.map((range) => (
        <label
         key={range.label}
         className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded transition"

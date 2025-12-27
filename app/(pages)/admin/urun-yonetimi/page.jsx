@@ -167,24 +167,7 @@ export default function AdminUrunYonetimiPage() {
    />
    <AdminProductsHeader onLogout={handleLogout} />
    <AdminProductsStats
-    totalProducts={(() => {
-     // Her ürün için tüm renk varyantlarını say
-     let count = 0;
-     products.forEach((product) => {
-      if (product.colors && Array.isArray(product.colors) && product.colors.length > 0) {
-       // Her renk varyantı için ayrı bir ürün say
-       product.colors.forEach((color) => {
-        if (typeof color === 'object' && color.serialNumber) {
-         count++;
-        }
-       });
-      } else {
-       // Renk yoksa normal ürünü say
-       count++;
-      }
-     });
-     return count;
-    })()}
+    totalProducts={products.length}
     outOfStockProducts={(() => {
      // Stokta olmayan ürünleri say (renk varyantları dahil)
      let count = 0;

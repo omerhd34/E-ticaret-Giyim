@@ -36,6 +36,13 @@ export default function ProductImportantFeatures({ product, selectedColor = null
  const isCooktop = product.subCategory === "Set Üstü Ocak";
  const isTV = product.category === "Televizyon";
  const isVacuum = product.category?.toLowerCase().includes("süpürge");
+ const isWaterPurification = product.category?.toLowerCase().includes("su arıtma");
+ const isAirConditionerIndoorUnit = product.subCategory === "Klima İç Ünite";
+ const isAirConditionerOutdoorUnit = product.subCategory === "Klima Dış Ünite";
+ const isAirConditionerKit = product.subCategory === "Klima Takımı";
+ const isAirConditioner = isAirConditionerIndoorUnit || isAirConditionerOutdoorUnit || isAirConditionerKit;
+
+
 
  // Specifications'tan özellik bulma fonksiyonu
  const findSpecValue = (keyName) => {
@@ -387,6 +394,118 @@ export default function ProductImportantFeatures({ product, selectedColor = null
     }
    }
   }
+ } else if (isAirConditionerOutdoorUnit) {
+  // Klima Dış Ünite için 6 özellik 
+  const kompresorTipi = findSpecValueMultiple(["kompresör tipi"]);
+  if (kompresorTipi) {
+   importantFeatures.push({ key: "Kompresör Tipi", value: kompresorTipi });
+  }
+
+  const sogutmaEnerjiSinifi = findSpecValueMultiple(["soğutma enerji sınıfı"]);
+  if (sogutmaEnerjiSinifi) {
+   importantFeatures.push({ key: "Soğutma Enerji Sınıfı", value: sogutmaEnerjiSinifi });
+  }
+
+  const isitmaEnerjiSinifi = findSpecValueMultiple(["Isıtma Enerji Sınıfı"]);
+  if (isitmaEnerjiSinifi) {
+   importantFeatures.push({ key: "Isıtma Enerji Sınıfı", value: isitmaEnerjiSinifi });
+  }
+
+  const sogutmaKapasitesi = findSpecValueMultiple(["soğutma kapasitesi"]);
+  if (sogutmaKapasitesi) {
+   importantFeatures.push({ key: "Soğutma Kapasitesi(BTU)", value: sogutmaKapasitesi });
+  }
+
+  const sogutucuGaz = findSpecValueMultiple(["soğutucu gaz"]);
+  if (sogutucuGaz) {
+   importantFeatures.push({ key: "Soğutucu Gaz", value: sogutucuGaz });
+  }
+
+  const ucBoyutluHavaAkim = findSpecValueMultiple(["3 boyutlu hava akımı"]);
+  if (ucBoyutluHavaAkim) {
+   importantFeatures.push({ key: "3 Boyutlu Hava Akımı", value: ucBoyutluHavaAkim });
+  }
+ } else if (isAirConditionerIndoorUnit) {
+  // Klima İç Ünite için 8 özellik 
+  const kompresorTipi = findSpecValueMultiple(["kompresör tipi"]);
+  if (kompresorTipi) {
+   importantFeatures.push({ key: "Kompresör Tipi", value: kompresorTipi });
+  }
+
+  const sogutmaEnerjiSinifi = findSpecValueMultiple(["soğutma enerji sınıfı"]);
+  if (sogutmaEnerjiSinifi) {
+   importantFeatures.push({ key: "Soğutma Enerji Sınıfı", value: sogutmaEnerjiSinifi });
+  }
+
+  const isitmaEnerjiSinifi = findSpecValueMultiple(["Isıtma Enerji Sınıfı"]);
+  if (isitmaEnerjiSinifi) {
+   importantFeatures.push({ key: "Isıtma Enerji Sınıfı", value: isitmaEnerjiSinifi });
+  }
+
+  const sogutmaKapasitesi = findSpecValueMultiple(["soğutma kapasitesi"]);
+  if (sogutmaKapasitesi) {
+   importantFeatures.push({ key: "Soğutma Kapasitesi(BTU)", value: sogutmaKapasitesi });
+  }
+
+  const beklemeEnerjiTuketim = findSpecValueMultiple(["bekleme konumunda enerji tüketim"]);
+  if (beklemeEnerjiTuketim) {
+   importantFeatures.push({ key: "Bekleme Konumunda Enerji Tüketim", value: beklemeEnerjiTuketim });
+  }
+
+  const sogutucuGaz = findSpecValueMultiple(["soğutucu gaz"]);
+  if (sogutucuGaz) {
+   importantFeatures.push({ key: "Soğutucu Gaz", value: sogutucuGaz });
+  }
+
+  const ucBoyutluHavaAkim = findSpecValueMultiple(["3 boyutlu hava akımı"]);
+  if (ucBoyutluHavaAkim) {
+   importantFeatures.push({ key: "3 Boyutlu Hava Akımı", value: ucBoyutluHavaAkim });
+  }
+
+  const agBaglantiTipi = findSpecValueMultiple(["ağ bağlantı tipi"]);
+  if (agBaglantiTipi) {
+   importantFeatures.push({ key: "Ağ bağlantı tipi", value: agBaglantiTipi });
+  }
+ } else if (isWaterPurification) {
+  // Su Arıtma için 3 özellik: Tank Kapasitesi (Litre), Pompalı Sistem, Günlük Arıtma Kapasitesi (Litre)
+  // Filtre Tipleri görünmemeli
+
+  // Tank Kapasitesi (Litre) - verilerde tam olarak "Tank Kapasitesi (Litre)" olarak kayıtlı
+  for (const spec of allSpecifications) {
+   if (spec.items) {
+    const tankItem = spec.items.find(item => {
+     if (!item.key) return false;
+     const keyLower = item.key.toLowerCase();
+     return keyLower.includes("tank") && keyLower.includes("kapasite");
+    });
+    if (tankItem) {
+     importantFeatures.push({ key: "Tank Kapasitesi (Litre)", value: tankItem.value });
+     break;
+    }
+   }
+  }
+
+  // Pompalı Sistem - verilerde tam olarak "Pompalı Sistem" olarak kayıtlı
+  const pompaliSistem = findSpecValue("pompalı sistem") ||
+   findSpecValue("pompali sistem");
+  if (pompaliSistem) {
+   importantFeatures.push({ key: "Pompalı Sistem", value: pompaliSistem });
+  }
+
+  // Günlük Arıtma Kapasitesi (Litre) - verilerde tam olarak "Günlük Arıtma Kapasitesi (Litre)" olarak kayıtlı
+  for (const spec of allSpecifications) {
+   if (spec.items) {
+    const gunlukItem = spec.items.find(item => {
+     if (!item.key) return false;
+     const keyLower = item.key.toLowerCase();
+     return keyLower.includes("günlük") && keyLower.includes("arıtma") && keyLower.includes("kapasite");
+    });
+    if (gunlukItem) {
+     importantFeatures.push({ key: "Günlük Arıtma Kapasitesi (Litre)", value: gunlukItem.value });
+     break;
+    }
+   }
+  }
  } else {
   // Diğer ürünler için genel özellikler
   // Boyutlar (eğer varsa)
@@ -428,21 +547,35 @@ export default function ProductImportantFeatures({ product, selectedColor = null
   return null;
  }
 
+ // Grid class'ını ürün tipine göre belirle
+ const gridClass = isAirConditionerIndoorUnit
+  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-6"
+  : isAirConditionerOutdoorUnit
+   ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6"
+   : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6";
+
  return (
   <div className="mt-12 pt-12 border-t">
    <h2 className="font-bold text-2xl mb-6 text-gray-900">Önemli Özellikler</h2>
 
    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
-     {importantFeatures.map((feature, index) => (
-      <div key={index} className="flex flex-col">
-       <dt className="font-semibold text-gray-700 text-sm mb-1">{feature.key}</dt>
-       <dd className="text-gray-800 font-medium">{feature.value}</dd>
-      </div>
-     ))}
+    <div className={gridClass}>
+     {importantFeatures.map((feature, index) => {
+      // Her 4. öğede (klima iç ünite için) veya her 3. öğede (diğer ürünler için) border olmasın
+      const columnsPerRow = isAirConditionerIndoorUnit ? 4 : (isAirConditionerOutdoorUnit ? 3 : 3);
+      const isLastInRow = (index + 1) % columnsPerRow === 0;
+      // Border'ı sadece lg ekranlarda göster (desktop'ta 4 veya 3 sütunlu grid)
+      const borderClass = !isLastInRow ? 'lg:border-r lg:border-gray-200 lg:pr-4' : '';
+
+      return (
+       <div key={index} className={`flex flex-col ${borderClass}`}>
+        <dt className="font-semibold text-indigo-900 text-sm mb-1">{feature.key}</dt>
+        <dd className="text-gray-600 font-medium">{feature.value}</dd>
+       </div>
+      );
+     })}
     </div>
    </div>
   </div>
  );
 }
-

@@ -83,6 +83,7 @@ const normalizeColors = (colors) => {
      stock: c.stock !== undefined ? Number(c.stock) : 0,
      specifications: Array.isArray(c.specifications) ? c.specifications : [],
      manualLink: c.manualLink ? String(c.manualLink).trim() : "",
+     productsInside: Array.isArray(c.productsInside) ? c.productsInside : [],
     };
    }
    return null;

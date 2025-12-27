@@ -72,7 +72,6 @@ const categoryBrands = {
  "Ankastre Aspiratör / Davlumbaz": ["Profilo"],
  "Ankastre Bulaşık Makinesi": ["Profilo"],
  "Ankastre Setler": ["Profilo"],
- "Ankastre Mikrodalga Fırın": ["Profilo"],
 
  "Klima": ["Profilo", "Airfel", "Daikin", "Mitsubishi"],
 

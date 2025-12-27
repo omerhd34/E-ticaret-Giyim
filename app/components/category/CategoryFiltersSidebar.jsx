@@ -44,6 +44,7 @@ export default function CategoryFiltersSidebar({
      maxPrice={filters.maxPrice}
      onMinPriceChange={onMinPriceChange}
      onMaxPriceChange={onMaxPriceChange}
+     slug={slug}
     />
 
     <BrandFilter

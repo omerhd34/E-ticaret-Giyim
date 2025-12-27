@@ -21,6 +21,7 @@ import ProductActions from "@/app/components/product/ProductActions";
 import ProductFeatures from "@/app/components/product/ProductFeatures";
 import ProductAllFeatures from "@/app/components/product/ProductAllFeatures";
 import ProductImportantFeatures from "@/app/components/product/ProductImportantFeatures";
+import ProductBundleItems from "@/app/components/product/ProductBundleItems";
 import ProductLoading from "@/app/components/product/ProductLoading";
 import ProductNotFound from "@/app/components/product/ProductNotFound";
 import Toast from "@/app/components/ui/Toast";
@@ -649,11 +650,11 @@ export default function KategoriPage() {
    <div className="min-h-screen bg-gray-50 py-12">
     <Toast toast={toast} setToast={setToast} />
 
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto px-4 max-w-8xl">
      <ProductBreadcrumb product={product} />
 
-     <div className="grid lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-1">
+     <div className="grid lg:grid-cols-12 gap-8">
+      <div className="lg:col-span-5 lg:pr-8">
        <ProductImageGallery
         images={colorImages}
         selectedImage={selectedImage}
@@ -664,12 +665,12 @@ export default function KategoriPage() {
        />
       </div>
 
-      <div className="lg:col-span-2">
+      <div className="lg:col-span-7">
        {product.brand && (
         <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">
          {product.brand}
          {colorSerialNumber && (
-          <span className="ml-2 font-mono text-gray-600 normal-case">- {colorSerialNumber}</span>
+          <span className="ml-2 font-mono text-gray-900 font-semibold normal-case">- {colorSerialNumber}</span>
          )}
         </p>
        )}
@@ -733,6 +734,9 @@ export default function KategoriPage() {
 
      {/* Önemli Özellikler Bölümü */}
      <ProductImportantFeatures product={product} selectedColor={selectedColor} />
+
+     {/* Takım İçeriği Bölümü */}
+     <ProductBundleItems product={product} selectedColor={selectedColor} />
 
      {/* Tüm Özellikler Bölümü */}
      <div className="mt-12">

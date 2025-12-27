@@ -435,7 +435,7 @@ export default function UrunKarsilastirPage() {
            <tr className="bg-indigo-50">
             <td
              colSpan={comparisonItems.length + 1}
-             className="p-3 font-bold text-indigo-900 uppercase text-sm"
+             className="p-3 font-bold text-indigo-900 uppercase text-md"
             >
              {categoryName}
             </td>

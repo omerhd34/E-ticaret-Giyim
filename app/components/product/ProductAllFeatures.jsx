@@ -1,9 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { HiChevronDown, HiChevronUp } from "react-icons/hi";
 
 export default function ProductAllFeatures({ product, selectedColor = null }) {
  const [expandedCategories, setExpandedCategories] = useState({});
+ const [selectedBundleProductIndex, setSelectedBundleProductIndex] = useState(0);
 
  const toggleCategory = (index) => {
   setExpandedCategories(prev => ({
@@ -11,51 +12,83 @@ export default function ProductAllFeatures({ product, selectedColor = null }) {
    [index]: !prev[index]
   }));
  };
+
+ // Takım içindeki ürünleri kontrol et
+ const currentColorObj = useMemo(() => {
+  if (!product || !product.colors || product.colors.length === 0) return null;
+  return selectedColor
+   ? product.colors.find(c => typeof c === 'object' && c.name === selectedColor)
+   : (typeof product.colors[0] === 'object' ? product.colors[0] : null);
+ }, [product, selectedColor]);
+
+ const productsInside = currentColorObj?.productsInside;
+ const hasBundleProducts = productsInside && Array.isArray(productsInside) && productsInside.length > 0;
+
+ // Eğer takım ürünü varsa, seçilen ürünü kullan
+ const displayProduct = useMemo(() => {
+  if (!product) return null;
+  if (hasBundleProducts && productsInside && productsInside[selectedBundleProductIndex]) {
+   return productsInside[selectedBundleProductIndex];
+  }
+  return product;
+ }, [hasBundleProducts, productsInside, selectedBundleProductIndex, product]);
+
+ const displaySelectedColor = useMemo(() => {
+  if (hasBundleProducts && productsInside && productsInside[selectedBundleProductIndex]) {
+   // Takım içindeki ürünün ilk rengini kullan
+   const bundleProduct = productsInside[selectedBundleProductIndex];
+   if (bundleProduct.colors && bundleProduct.colors.length > 0) {
+    return bundleProduct.colors[0].name || null;
+   }
+  }
+  return selectedColor;
+ }, [hasBundleProducts, productsInside, selectedBundleProductIndex, selectedColor]);
+
  if (!product) return null;
 
- const hasDimensions = product.dimensions && (
-  product.dimensions.height || product.dimensions.width || product.dimensions.depth
+ const hasDimensions = displayProduct.dimensions && (
+  displayProduct.dimensions.height || displayProduct.dimensions.width || displayProduct.dimensions.depth
  );
 
- const dimensions = product.dimensions;
+ const dimensions = displayProduct.dimensions;
 
  let selectedColorObj = null;
- if (selectedColor && product.colors) {
-  selectedColorObj = product.colors.find(c => {
+ if (displaySelectedColor && displayProduct.colors) {
+  selectedColorObj = displayProduct.colors.find(c => {
    if (typeof c === 'object') {
-    return c.name === selectedColor;
+    return c.name === displaySelectedColor;
    }
-   return c === selectedColor;
+   return c === displaySelectedColor;
   });
  }
- if (!selectedColorObj && product.colors && product.colors.length > 0) {
-  selectedColorObj = typeof product.colors[0] === 'object' ? product.colors[0] : null;
+ if (!selectedColorObj && displayProduct.colors && displayProduct.colors.length > 0) {
+  selectedColorObj = typeof displayProduct.colors[0] === 'object' ? displayProduct.colors[0] : null;
  }
 
- const displaySerialNumber = selectedColorObj?.serialNumber || product.serialNumber;
- const productSpecifications = product.specifications && Array.isArray(product.specifications) ? product.specifications : [];
+ const displaySerialNumber = selectedColorObj?.serialNumber || displayProduct.serialNumber;
+ const productSpecifications = displayProduct.specifications && Array.isArray(displayProduct.specifications) ? displayProduct.specifications : [];
  const colorSpecifications = selectedColorObj?.specifications || [];
- const displayManualLink = selectedColorObj?.manualLink || product.manualLink;
+ const displayManualLink = selectedColorObj?.manualLink || displayProduct.manualLink;
 
  const productFeaturesItems = [];
- if (product.brand) {
-  productFeaturesItems.push({ key: "Marka", value: product.brand });
+ if (displayProduct.brand) {
+  productFeaturesItems.push({ key: "Marka", value: displayProduct.brand });
  }
  if (displaySerialNumber) {
   productFeaturesItems.push({ key: "Seri Numarası", value: displaySerialNumber });
  }
- if (product.material) {
-  productFeaturesItems.push({ key: "Materyal", value: product.material });
+ if (displayProduct.material) {
+  productFeaturesItems.push({ key: "Materyal", value: displayProduct.material });
  }
- if (product.colors && product.colors.length > 0) {
-  const colorsText = product.colors.map((color) => {
+ if (displayProduct.colors && displayProduct.colors.length > 0) {
+  const colorsText = displayProduct.colors.map((color) => {
    const colorName = typeof color === 'object' ? color.name : color;
    return colorName;
   }).join(", ");
   productFeaturesItems.push({ key: "Renkler", value: colorsText });
  }
- if (product.tags && product.tags.length > 0) {
-  productFeaturesItems.push({ key: "Etiketler", value: product.tags.join(", ") });
+ if (displayProduct.tags && displayProduct.tags.length > 0) {
+  productFeaturesItems.push({ key: "Etiketler", value: displayProduct.tags.join(", ") });
  }
 
  // "Boyutlar" kategorisi için items hazırla
@@ -71,9 +104,9 @@ export default function ProductAllFeatures({ product, selectedColor = null }) {
    boyutlarItems.push({ key: "Derinlik", value: `${dimensions.depth} cm` });
   }
  }
- const hasNetWeight = product.netWeight !== null && product.netWeight !== undefined && product.netWeight > 0;
+ const hasNetWeight = displayProduct.netWeight !== null && displayProduct.netWeight !== undefined && displayProduct.netWeight > 0;
  if (hasNetWeight) {
-  boyutlarItems.push({ key: "Net Ağırlık", value: `${product.netWeight} kg` });
+  boyutlarItems.push({ key: "Net Ağırlık", value: `${displayProduct.netWeight} kg` });
  }
 
  // Önce ürün seviyesindeki özellikleri, sonra renk bazlı özellikleri birleştir
@@ -139,7 +172,7 @@ export default function ProductAllFeatures({ product, selectedColor = null }) {
  }
 
  // TV ürünleri için "Boyutlar", diğerleri için "Boyutlar ve Ağırlık" kullan
- const isTelevizyon = product.category && product.category.toLowerCase().trim() === "televizyon";
+ const isTelevizyon = displayProduct.category && displayProduct.category.toLowerCase().trim() === "televizyon";
  const boyutlarCategoryName = isTelevizyon ? "Boyutlar" : "Boyutlar ve Ağırlık";
 
  if (boyutlarIndex !== -1) {
@@ -177,6 +210,33 @@ export default function ProductAllFeatures({ product, selectedColor = null }) {
   <div className="mt-12 pt-12 border-t">
    <h2 className="font-bold text-2xl mb-6 text-gray-900">Tüm Özellikler</h2>
 
+   {/* Takım İçindeki Ürünler Seçimi */}
+   {hasBundleProducts && (
+    <div className="mb-6">
+     <h3 className="font-semibold text-lg mb-3 text-gray-800">Takım İçeriği</h3>
+     <div className="flex flex-wrap gap-2">
+      {productsInside.map((bundleProduct, index) => {
+       const bundleProductName = bundleProduct.name || `Ürün ${index + 1}`;
+       const isSelected = selectedBundleProductIndex === index;
+       return (
+        <button
+         key={index}
+         onClick={() => {
+          setSelectedBundleProductIndex(index);
+         }}
+         className={`px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer ${isSelected
+          ? "bg-indigo-600 text-white"
+          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+         {bundleProductName}
+        </button>
+       );
+      })}
+     </div>
+    </div>
+   )}
+
    <div className="space-y-4">
     {processedSpecifications && processedSpecifications.length > 0 ? (
      processedSpecifications.map((spec, specIdx) => {
@@ -187,7 +247,7 @@ export default function ProductAllFeatures({ product, selectedColor = null }) {
        <div key={specIdx} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <button
          onClick={() => toggleCategory(specIdx)}
-         className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition"
+         className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition cursor-pointer"
         >
          <h3 className="font-semibold text-lg text-gray-800">{spec.category}</h3>
          {isExpanded ? (

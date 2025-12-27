@@ -97,6 +97,9 @@ const ProductSchema = new mongoose.Schema({
     },
    }],
   }],
+  productsInside: [{
+   type: mongoose.Schema.Types.Mixed,
+  }],
  }],
  stock: {
   type: Number,

@@ -11,6 +11,11 @@ import { getProductUrl } from "@/app/utils/productUrl";
 import ProductRequestModal from "@/app/components/product/ProductRequestModal";
 import { MENU_ITEMS } from "@/app/utils/menuItems";
 
+const HEADER_MESSAGES = [
+ "Tüm Türkiye'ye nakliye ve montaj hizmeti !",
+ "Bursa'ya özel ücretsiz kargo fırsatı !"
+];
+
 const Header = () => {
  const router = useRouter();
  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -25,9 +30,18 @@ const Header = () => {
  const [showProductRequestModal, setShowProductRequestModal] = useState(false);
  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
  const [expandedMobileMenu, setExpandedMobileMenu] = useState(null);
+ const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 
  useLayoutEffect(() => {
   setIsClient(true);
+ }, []);
+
+ useEffect(() => {
+  const interval = setInterval(() => {
+   setCurrentMessageIndex((prevIndex) => (prevIndex + 1) % HEADER_MESSAGES.length);
+  }, 5000);
+
+  return () => clearInterval(interval);
  }, []);
 
  useEffect(() => {
@@ -186,7 +200,7 @@ const Header = () => {
     <div className="container mx-auto px-3 sm:px-4 flex justify-between items-center">
      <p className="hidden sm:flex items-center gap-1 sm:gap-1.5 text-xs sm:text-[11px]">
       <HiTruck color="red" size={18} />
-      <span>Tüm Türkiye&apos;ye nakliye ve montaj hizmeti !</span>
+      <span>{HEADER_MESSAGES[currentMessageIndex]}</span>
      </p>
      <div className="flex items-center justify-end gap-3 sm:gap-4 lg:gap-5">
       <button

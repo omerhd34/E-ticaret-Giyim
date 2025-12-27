@@ -19,42 +19,64 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
   return true;
  });
 
- const expandedProducts = [];
- categoryFilteredProducts.forEach((product) => {
-  if (product.colors && Array.isArray(product.colors) && product.colors.length > 0) {
-   product.colors.forEach((color) => {
-    if (typeof color === 'object' && color.serialNumber) {
-     expandedProducts.push({
-      ...product,
-      _colorVariantId: `${product._id}-${color.serialNumber}`,
-      _selectedColor: color,
-     });
-    }
-   });
-  } else {
-   expandedProducts.push(product);
-  }
- });
-
- const filteredProducts = expandedProducts.filter((product) => {
+ const filteredProducts = categoryFilteredProducts.filter((product) => {
   if (selectedStockFilter) {
-   const colorVariant = product._selectedColor;
-   const variantStock = colorVariant
-    ? (colorVariant.stock !== undefined ? Number(colorVariant.stock) || 0 : 0)
-    : (product.stock !== undefined ? Number(product.stock) || 0 : 0);
+   // Renk varyantları varsa, en az birinde stok kontrolü yap
+   if (product.colors && Array.isArray(product.colors) && product.colors.length > 0) {
+    const colorVariants = product.colors.filter(c => typeof c === 'object' && c.serialNumber);
+    if (colorVariants.length > 0) {
+     const totalStock = colorVariants.reduce((sum, color) => {
+      return sum + (color.stock !== undefined ? Number(color.stock) || 0 : 0);
+     }, 0);
+     const maxStock = Math.max(...colorVariants.map(c => c.stock !== undefined ? Number(c.stock) || 0 : 0));
+     const minStock = Math.min(...colorVariants.map(c => c.stock !== undefined ? Number(c.stock) || 0 : 0));
 
-   switch (selectedStockFilter) {
-    case 'inStock':
-     if (variantStock <= 0) return false;
-     break;
-    case 'outOfStock':
-     if (variantStock > 0) return false;
-     break;
-    case 'lowStock':
-     if (variantStock >= 10 || variantStock === 0) return false;
-     break;
-    default:
-     break;
+     switch (selectedStockFilter) {
+      case 'inStock':
+       if (maxStock <= 0) return false;
+       break;
+      case 'outOfStock':
+       if (maxStock > 0) return false;
+       break;
+      case 'lowStock':
+       if (maxStock >= 10 || maxStock === 0) return false;
+       break;
+      default:
+       break;
+     }
+    } else {
+     // Renk varyantı yoksa normal stok kontrolü
+     const productStock = product.stock !== undefined ? Number(product.stock) || 0 : 0;
+     switch (selectedStockFilter) {
+      case 'inStock':
+       if (productStock <= 0) return false;
+       break;
+      case 'outOfStock':
+       if (productStock > 0) return false;
+       break;
+      case 'lowStock':
+       if (productStock >= 10 || productStock === 0) return false;
+       break;
+      default:
+       break;
+     }
+    }
+   } else {
+    // Renk yoksa normal stok kontrolü
+    const productStock = product.stock !== undefined ? Number(product.stock) || 0 : 0;
+    switch (selectedStockFilter) {
+     case 'inStock':
+      if (productStock <= 0) return false;
+      break;
+     case 'outOfStock':
+      if (productStock > 0) return false;
+      break;
+     case 'lowStock':
+      if (productStock >= 10 || productStock === 0) return false;
+      break;
+     default:
+      break;
+    }
    }
   }
 
@@ -84,17 +106,54 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
   if (!sortBy) return filteredProducts;
 
   return [...filteredProducts].sort((a, b) => {
-   const colorVariantA = a._selectedColor;
-   const colorVariantB = b._selectedColor;
-
    let valueA, valueB;
 
    if (sortBy === 'price') {
-    valueA = colorVariantA ? (colorVariantA.price || a.price || 0) : (a.price || 0);
-    valueB = colorVariantB ? (colorVariantB.price || b.price || 0) : (b.price || 0);
+    // Renk varyantları varsa en düşük fiyatı al
+    if (a.colors && Array.isArray(a.colors) && a.colors.length > 0) {
+     const colorVariants = a.colors.filter(c => typeof c === 'object' && c.serialNumber);
+     if (colorVariants.length > 0) {
+      valueA = Math.min(...colorVariants.map(c => c.price || a.price || 0));
+     } else {
+      valueA = a.price || 0;
+     }
+    } else {
+     valueA = a.price || 0;
+    }
+
+    if (b.colors && Array.isArray(b.colors) && b.colors.length > 0) {
+     const colorVariants = b.colors.filter(c => typeof c === 'object' && c.serialNumber);
+     if (colorVariants.length > 0) {
+      valueB = Math.min(...colorVariants.map(c => c.price || b.price || 0));
+     } else {
+      valueB = b.price || 0;
+     }
+    } else {
+     valueB = b.price || 0;
+    }
    } else if (sortBy === 'stock') {
-    valueA = colorVariantA ? (colorVariantA.stock !== undefined ? Number(colorVariantA.stock) || 0 : 0) : (a.stock !== undefined ? Number(a.stock) || 0 : 0);
-    valueB = colorVariantB ? (colorVariantB.stock !== undefined ? Number(colorVariantB.stock) || 0 : 0) : (b.stock !== undefined ? Number(b.stock) || 0 : 0);
+    // Renk varyantları varsa toplam stoku al
+    if (a.colors && Array.isArray(a.colors) && a.colors.length > 0) {
+     const colorVariants = a.colors.filter(c => typeof c === 'object' && c.serialNumber);
+     if (colorVariants.length > 0) {
+      valueA = colorVariants.reduce((sum, color) => sum + (color.stock !== undefined ? Number(color.stock) || 0 : 0), 0);
+     } else {
+      valueA = a.stock !== undefined ? Number(a.stock) || 0 : 0;
+     }
+    } else {
+     valueA = a.stock !== undefined ? Number(a.stock) || 0 : 0;
+    }
+
+    if (b.colors && Array.isArray(b.colors) && b.colors.length > 0) {
+     const colorVariants = b.colors.filter(c => typeof c === 'object' && c.serialNumber);
+     if (colorVariants.length > 0) {
+      valueB = colorVariants.reduce((sum, color) => sum + (color.stock !== undefined ? Number(color.stock) || 0 : 0), 0);
+     } else {
+      valueB = b.stock !== undefined ? Number(b.stock) || 0 : 0;
+     }
+    } else {
+     valueB = b.stock !== undefined ? Number(b.stock) || 0 : 0;
+    }
    } else {
     return 0;
    }
@@ -115,12 +174,7 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
   }
  };
 
- const totalProductCount = products.reduce((count, product) => {
-  if (product.colors && Array.isArray(product.colors) && product.colors.length > 0) {
-   return count + product.colors.filter(c => typeof c === 'object' && c.serialNumber).length;
-  }
-  return count + 1;
- }, 0);
+ const totalProductCount = products.length;
 
  const selectedMenuItem = MENU_ITEMS.find(item => item.name === selectedCategory);
  const availableSubCategories = selectedMenuItem?.subCategories || [];
@@ -165,7 +219,7 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
         onCategoryChange(e.target.value || null);
         onSubCategoryChange(null);
        }}
-       className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 cursor-pointer appearance-none bg-white text-gray-800 font-medium shadow-sm hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200"
+       className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 cursor-pointer appearance-none bg-white text-gray-800 font-medium shadow-sm hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 text-sm"
        style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%234F46E5' d='M8 11L3 6h10z'/%3E%3C/svg%3E")`,
         backgroundRepeat: 'no-repeat',
@@ -188,7 +242,7 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
        <select
         value={selectedSubCategory || ""}
         onChange={(e) => onSubCategoryChange(e.target.value || null)}
-        className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 cursor-pointer appearance-none bg-white text-gray-800 font-medium shadow-sm hover:border-purple-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200"
+        className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 cursor-pointer appearance-none bg-white text-gray-800 font-medium shadow-sm hover:border-purple-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 text-sm"
         style={{
          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%239333EA' d='M8 11L3 6h10z'/%3E%3C/svg%3E")`,
          backgroundRepeat: 'no-repeat',
@@ -211,7 +265,7 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
       <select
        value={selectedStockFilter || ""}
        onChange={(e) => onStockFilterChange(e.target.value || null)}
-       className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 cursor-pointer appearance-none bg-white text-gray-800 font-medium shadow-sm hover:border-green-400 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200"
+       className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 cursor-pointer appearance-none bg-white text-gray-800 font-medium shadow-sm hover:border-green-400 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-sm"
        style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%2316A34A' d='M8 11L3 6h10z'/%3E%3C/svg%3E")`,
         backgroundRepeat: 'no-repeat',
@@ -233,7 +287,7 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
       <select
        value={selectedFeaturedFilter || ""}
        onChange={(e) => onFeaturedFilterChange(e.target.value || null)}
-       className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 cursor-pointer appearance-none bg-white text-gray-800 font-medium shadow-sm hover:border-yellow-400 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200"
+       className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 cursor-pointer appearance-none bg-white text-gray-800 font-medium shadow-sm hover:border-yellow-400 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200 text-sm"
        style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23CA8A04' d='M8 11L3 6h10z'/%3E%3C/svg%3E")`,
         backgroundRepeat: 'no-repeat',
@@ -254,7 +308,7 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
       <select
        value={selectedNewFilter || ""}
        onChange={(e) => onNewFilterChange(e.target.value || null)}
-       className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 cursor-pointer appearance-none bg-white text-gray-800 font-medium shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+       className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 cursor-pointer appearance-none bg-white text-gray-800 font-medium shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-sm"
        style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%232563EB' d='M8 11L3 6h10z'/%3E%3C/svg%3E")`,
         backgroundRepeat: 'no-repeat',
@@ -330,17 +384,49 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
       </thead>
       <tbody className="divide-y divide-gray-200">
        {sortedProducts.map((product) => {
-        const colorVariant = product._selectedColor;
-        const displayPrice = colorVariant ? (colorVariant.price || product.price) : product.price;
-        const displayDiscountPrice = colorVariant ? (colorVariant.discountPrice !== undefined ? colorVariant.discountPrice : product.discountPrice) : product.discountPrice;
-        const displayStock = colorVariant ? (colorVariant.stock !== undefined ? colorVariant.stock : 0) : product.stock;
-        const displaySerialNumber = colorVariant ? colorVariant.serialNumber : product.serialNumber;
-        const displayImage = colorVariant && colorVariant.images && colorVariant.images.length > 0
-         ? colorVariant.images[0]
+        // Renk varyantlarını kontrol et
+        const colorVariants = product.colors && Array.isArray(product.colors)
+         ? product.colors.filter(c => typeof c === 'object' && c.serialNumber)
+         : [];
+
+        // İlk rengin bilgilerini al (görsel için)
+        const firstColor = colorVariants.length > 0 ? colorVariants[0] : null;
+        const displayImage = firstColor && firstColor.images && firstColor.images.length > 0
+         ? firstColor.images[0]
          : (product.images?.[0] || null);
 
+        // Tüm renk kodlarını birleştir
+        const serialNumbers = colorVariants.length > 0
+         ? colorVariants.map(c => c.serialNumber).join(', ')
+         : (product.serialNumber || null);
+
+        // Fiyat: Renk varyantları varsa en düşük fiyatı göster
+        let displayPrice = product.price || 0;
+        let displayDiscountPrice = product.discountPrice;
+        if (colorVariants.length > 0) {
+         const prices = colorVariants.map(c => c.price || product.price || 0);
+         displayPrice = Math.min(...prices);
+         const discountPrices = colorVariants.map(c => c.discountPrice !== undefined ? c.discountPrice : product.discountPrice).filter(p => p !== null && p !== undefined);
+         if (discountPrices.length > 0) {
+          displayDiscountPrice = Math.min(...discountPrices);
+         }
+        }
+
+        // Stok: Renk varyantları varsa toplam stoku göster
+        let displayStock = product.stock !== undefined ? Number(product.stock) || 0 : 0;
+        if (colorVariants.length > 0) {
+         displayStock = colorVariants.reduce((sum, color) => {
+          return sum + (color.stock !== undefined ? Number(color.stock) || 0 : 0);
+         }, 0);
+        }
+
+        // Stok durumu: En az bir renkte stok varsa "Stokta"
+        const hasStock = colorVariants.length > 0
+         ? colorVariants.some(c => (c.stock !== undefined ? Number(c.stock) || 0 : 0) > 0)
+         : (displayStock > 0);
+
         return (
-         <tr key={product._colorVariantId || product._id} className="hover:bg-gray-50">
+         <tr key={product._id} className="hover:bg-gray-50">
           <td className="px-4 py-4">
            <div className="flex items-center gap-3">
             <div className="w-16 h-16 rounded-lg overflow-hidden bg-white shrink-0 flex items-center justify-center p-1">
@@ -355,11 +441,17 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
             <div>
              <div className="font-bold text-gray-900">{product.name}</div>
              <div className="text-xs text-gray-500 flex items-center gap-2 flex-wrap">
-              {product.brand && <span>{product.brand}</span>}
-              {displaySerialNumber ? (
-               <span className="font-mono text-gray-600">- {displaySerialNumber}</span>
-              ) : (
-               <span className="text-gray-400 italic">- Seri No: Yok</span>
+              {product.brand && (
+               <span>
+                {product.brand}
+                {serialNumbers ? ` - ${serialNumbers}` : ''}
+               </span>
+              )}
+              {!product.brand && serialNumbers && (
+               <span className="font-mono text-gray-600">{serialNumbers}</span>
+              )}
+              {!product.brand && !serialNumbers && (
+               <span className="text-gray-400 italic">Seri No: Yok</span>
               )}
              </div>
             </div>
@@ -380,7 +472,7 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
           </td>
           <td className="px-4 py-4">
            <div className="flex flex-col gap-2">
-            {displayStock > 0 ? (
+            {hasStock ? (
              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
               <MdCheckCircle size={14} />
               Stokta
@@ -415,13 +507,7 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
              Düzenle
             </button>
             <button
-             onClick={() => {
-              if (colorVariant && colorVariant.serialNumber) {
-               onDelete(product._id, colorVariant.serialNumber);
-              } else {
-               onDelete(product._id);
-              }
-             }}
+             onClick={() => onDelete(product._id)}
              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition flex items-center gap-2 cursor-pointer"
             >
              <MdDelete size={16} />

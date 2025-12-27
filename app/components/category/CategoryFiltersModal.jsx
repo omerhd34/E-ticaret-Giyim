@@ -47,6 +47,7 @@ export default function CategoryFiltersModal({
       onMinPriceChange={onMinPriceChange}
       onMaxPriceChange={onMaxPriceChange}
       isMobile={true}
+      slug={slug}
      />
 
      <BrandFilter
