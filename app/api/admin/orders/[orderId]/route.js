@@ -42,13 +42,6 @@ export async function PATCH(request, { params }) {
   if (hasStatusUpdate) {
    nextStatus = String(status).trim();
    statusNorm = normalizeText(nextStatus);
-   // Admin siparişi iptal edemesin (UI’dan bağımsız güvence)
-   if (statusNorm.includes("iptal")) {
-    return NextResponse.json(
-     { success: false, message: "Admin siparişi iptal edemez" },
-     { status: 403 }
-    );
-   }
   }
 
   // Order embedded olduğu için user içinde ara
@@ -65,9 +58,10 @@ export async function PATCH(request, { params }) {
   // Eski durumu kaydet (mail için)
   const oldStatus = hasStatusUpdate ? (user.orders[idx]?.status || "") : "";
 
-  // Teslim edildiyse admin bir daha status değiştiremesin (iade talebi güncellemesi hariç)
+  // Teslim edildiyse admin bir daha status değiştiremesin (iptal ve iade talebi güncellemesi hariç)
   const currentStatusNorm = normalizeText(user.orders[idx]?.status);
-  if (hasStatusUpdate && currentStatusNorm.includes("teslim")) {
+  const isCancelling = hasStatusUpdate && statusNorm.includes("iptal");
+  if (hasStatusUpdate && currentStatusNorm.includes("teslim") && !isCancelling) {
    return NextResponse.json(
     { success: false, message: "Teslim edilen siparişin durumu değiştirilemez" },
     { status: 403 }

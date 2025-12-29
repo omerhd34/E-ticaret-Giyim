@@ -1,12 +1,14 @@
 "use client";
 import { useState } from "react";
-import { HiMail, HiLockClosed } from "react-icons/hi";
+import { HiMail, HiLockClosed, HiEye, HiEyeOff } from "react-icons/hi";
 import AlertMessage from "./AlertMessage";
 
 export default function LoginForm({ onLogin, onForgotPassword, onVerificationRequired }) {
  const [form, setForm] = useState({ email: "", password: "" });
  const [loading, setLoading] = useState(false);
  const [error, setError] = useState("");
+ const [showPassword, setShowPassword] = useState(false);
+ const [rememberMe, setRememberMe] = useState(false);
 
  const handleSubmit = async (e) => {
   e.preventDefault();
@@ -17,7 +19,7 @@ export default function LoginForm({ onLogin, onForgotPassword, onVerificationReq
    const res = await fetch("/api/user/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(form),
+    body: JSON.stringify({ ...form, rememberMe }),
    });
 
    const data = await res.json();
@@ -62,7 +64,7 @@ export default function LoginForm({ onLogin, onForgotPassword, onVerificationReq
      />
      <input
       type="email"
-      value={form.email}
+      value={form.email || ""}
       onChange={(e) => setForm({ ...form, email: e.target.value })}
       className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
       placeholder="ornek@email.com"
@@ -81,25 +83,37 @@ export default function LoginForm({ onLogin, onForgotPassword, onVerificationReq
       size={20}
      />
      <input
-      type="password"
-      value={form.password}
+      type={showPassword ? "text" : "password"}
+      value={form.password || ""}
       onChange={(e) => setForm({ ...form, password: e.target.value })}
-      className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+      className="w-full pl-11 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
       placeholder="••••••••••"
       required
      />
+     <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+     >
+      {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
+     </button>
     </div>
    </div>
 
    <div className="flex items-center justify-between text-sm">
     <label className="flex items-center gap-2 cursor-pointer">
-     <input type="checkbox" className="w-4 h-4" />
+     <input
+      type="checkbox"
+      className="w-4 h-4 cursor-pointer"
+      checked={rememberMe || false}
+      onChange={(e) => setRememberMe(e.target.checked)}
+     />
      <span className="text-gray-600">Beni Hatırla</span>
     </label>
     <button
      type="button"
      onClick={onForgotPassword}
-     className="text-indigo-600 hover:text-indigo-800 font-semibold"
+     className="text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer"
     >
      Şifremi Unuttum
     </button>
@@ -108,7 +122,7 @@ export default function LoginForm({ onLogin, onForgotPassword, onVerificationReq
    <button
     type="submit"
     disabled={loading}
-    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-lg transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
    >
     {loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
    </button>

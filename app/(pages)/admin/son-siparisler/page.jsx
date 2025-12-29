@@ -11,6 +11,7 @@ import ActiveOrdersTable from "@/app/components/admin/ActiveOrdersTable";
 import CompletedOrdersTable from "@/app/components/admin/CompletedOrdersTable";
 import OrderDetailModal from "@/app/components/admin/OrderDetailModal";
 import ReturnStatusChangeModal from "@/app/components/admin/ReturnStatusChangeModal";
+import AdminCancelOrderModal from "@/app/components/admin/AdminCancelOrderModal";
 
 export default function AdminSonSiparislerPage() {
  const router = useRouter();
@@ -25,6 +26,7 @@ export default function AdminSonSiparislerPage() {
 
  const [detailModal, setDetailModal] = useState({ show: false, row: null });
  const [returnStatusModal, setReturnStatusModal] = useState({ show: false, orderId: null, currentStatus: "", newStatus: "" });
+ const [cancelOrderModal, setCancelOrderModal] = useState({ show: false, orderId: null });
  const [completedFilter, setCompletedFilter] = useState("all");// all | cancelled | delivered | rr:*
  const [completedPage, setCompletedPage] = useState(0);
 
@@ -200,6 +202,50 @@ export default function AdminSonSiparislerPage() {
   setDetailModal({ show: false, row: null });
  };
 
+ const handleCancelOrderClick = (orderId) => {
+  setCancelOrderModal({ show: true, orderId });
+ };
+
+ const handleCancelOrderConfirm = async (orderId) => {
+  if (!orderId) return;
+
+  try {
+   setUpdatingOrderId(orderId);
+   setCancelOrderModal({ show: false, orderId: null });
+
+   const res = await axiosInstance.patch(`/api/admin/orders/${orderId}`, {
+    status: "İptal Edildi",
+   });
+
+   if (!res.data?.success) {
+    setToast({ show: true, message: res.data?.message || "Sipariş iptal edilemedi.", type: "error" });
+    return;
+   }
+
+   setToast({ show: true, message: "Sipariş başarıyla iptal edildi.", type: "success" });
+   setRecentOrders((prev) =>
+    prev.map((r) => (r?.order?.orderId === orderId ? { ...r, order: { ...r.order, status: "İptal Edildi" } } : r))
+   );
+   setDetailModal((prev) => {
+    if (!prev?.show || prev?.row?.order?.orderId !== orderId) return prev;
+    return {
+     ...prev,
+     row: {
+      ...(prev.row || {}),
+      order: {
+       ...(prev.row?.order || {}),
+       status: "İptal Edildi",
+      },
+     },
+    };
+   });
+  } catch {
+   setToast({ show: true, message: "Sipariş iptal edilemedi.", type: "error" });
+  } finally {
+   setUpdatingOrderId(null);
+  }
+ };
+
 
  const completedOrders = useMemo(() => {
   return (recentOrders || []).filter((row) => {
@@ -284,6 +330,7 @@ export default function AdminSonSiparislerPage() {
      onStatusChange={updateOrderStatus}
      onReturnStatusChange={handleReturnStatusChangeRequest}
      onDetailClick={openOrderDetail}
+     onCancelClick={handleCancelOrderClick}
      updatingOrderId={updatingOrderId}
      updatingReturnOrderId={updatingReturnOrderId}
      onRefresh={fetchAdminOrders}
@@ -310,6 +357,7 @@ export default function AdminSonSiparislerPage() {
     order={selectedOrder}
     user={selectedUser}
     onClose={closeOrderDetail}
+    onCancel={handleCancelOrderClick}
    />
 
    <ReturnStatusChangeModal
@@ -319,6 +367,13 @@ export default function AdminSonSiparislerPage() {
     orderId={returnStatusModal.orderId}
     onConfirm={updateReturnStatus}
     onCancel={() => setReturnStatusModal({ show: false, orderId: null, currentStatus: "", newStatus: "" })}
+   />
+
+   <AdminCancelOrderModal
+    show={cancelOrderModal.show}
+    orderId={cancelOrderModal.orderId}
+    onConfirm={handleCancelOrderConfirm}
+    onCancel={() => setCancelOrderModal({ show: false, orderId: null })}
    />
   </div>
  );

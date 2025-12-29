@@ -1,4 +1,4 @@
-@import url("https://fonts.goo gleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
 @import "tailwindcss";
 
 body {
@@ -24,7 +24,38 @@ body {
   stroke-width: 1.5;
 }
 
-/* Scrollbar gizleme utility */
+/* Scrollbar stilleri - Chrome, Safari, Edge, Yandex için */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fff;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #080099;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #080099;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #0d00ff;
+}
+
+/* Firefox için scrollbar stilleri */
+@supports (scrollbar-color: #080099 #fff) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #080099 #fff;
+  }
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

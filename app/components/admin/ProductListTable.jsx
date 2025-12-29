@@ -1,9 +1,11 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useMemo } from "react";
 import { HiPlus, HiX } from "react-icons/hi";
 import { MdDelete, MdEdit, MdInventory2, MdStar, MdCheckCircle, MdNewReleases, MdArrowUpward, MdArrowDownward } from "react-icons/md";
 import { MENU_ITEMS } from "@/app/utils/menuItems";
+import { getProductUrl } from "@/app/utils/productUrl";
 
 export default function ProductListTable({ products, onEdit, onDelete, onAddNew, selectedCategory, selectedSubCategory, selectedStockFilter, selectedFeaturedFilter, selectedNewFilter, onCategoryChange, onSubCategoryChange, onStockFilterChange, onFeaturedFilterChange, onNewFilterChange }) {
  const [sortBy, setSortBy] = useState(null); // 'price' | 'stock' | null
@@ -425,11 +427,13 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
          ? colorVariants.some(c => (c.stock !== undefined ? Number(c.stock) || 0 : 0) > 0)
          : (displayStock > 0);
 
+        const productUrl = getProductUrl(product, firstColor?.serialNumber);
+
         return (
          <tr key={product._id} className="hover:bg-gray-50">
           <td className="px-4 py-4">
            <div className="flex items-center gap-3">
-            <div className="w-16 h-16 rounded-lg overflow-hidden bg-white shrink-0 flex items-center justify-center p-1">
+            <Link href={productUrl} className="w-16 h-16 rounded-lg overflow-hidden bg-white shrink-0 flex items-center justify-center p-1 hover:opacity-80 transition-opacity cursor-pointer">
              {displayImage ? (
               <Image src={displayImage} alt={product.name} width={64} height={64} className="w-16 h-16 object-contain" />
              ) : (
@@ -437,7 +441,7 @@ export default function ProductListTable({ products, onEdit, onDelete, onAddNew,
                <MdInventory2 size={28} />
               </div>
              )}
-            </div>
+            </Link>
             <div>
              <div className="font-bold text-gray-900">{product.name}</div>
              <div className="text-xs text-gray-500 flex items-center gap-2 flex-wrap">

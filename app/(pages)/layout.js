@@ -4,13 +4,23 @@ import Footer from "../components/ui/Footer";
 import ScrollToTop from "../components/ui/ScrollToTop";
 import ComparisonWidget from "../components/ui/ComparisonWidget";
 import { usePathname } from "next/navigation";
+import { OrganizationSchema, WebSiteSchema } from "../components/seo/StructuredData";
+import CanonicalUrl from "../components/seo/CanonicalUrl";
 
 export default function PagesLayout({ children }) {
  const pathname = usePathname();
  const isAdminPage = pathname?.startsWith("/admin");
+ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
 
  return (
   <>
+   {!isAdminPage && (
+    <>
+     <OrganizationSchema baseUrl={baseUrl} />
+     <WebSiteSchema baseUrl={baseUrl} />
+     <CanonicalUrl pathname={pathname} baseUrl={baseUrl} />
+    </>
+   )}
    {!isAdminPage && <Header />}
    <div className="flex-1">
     {children}

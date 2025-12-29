@@ -1,5 +1,5 @@
 "use client";
-import { FaStar } from "react-icons/fa";
+import { FaStar, FaRegStar } from "react-icons/fa";
 
 export default function ProductRating({
  product,
@@ -24,15 +24,10 @@ export default function ProductRating({
     <div className="flex text-yellow-400">
      {[...Array(5)].map((_, i) => {
       const isFilled = i < Math.round(avgRating || 0);
-      return (
-       <svg
-        key={i}
-        className={`w-4 h-4 sm:w-5 sm:h-5 ${isFilled ? "fill-current" : "fill-transparent"}`}
-        viewBox="0 0 20 20"
-        style={!isFilled ? { stroke: "#d1d5db", strokeWidth: 1 } : {}}
-       >
-        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-       </svg>
+      return isFilled ? (
+       <FaStar key={i} className="w-4 h-4 sm:w-5 sm:h-5" />
+      ) : (
+       <FaRegStar key={i} className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300" />
       );
      })}
     </div>

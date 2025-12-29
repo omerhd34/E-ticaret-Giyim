@@ -61,7 +61,7 @@ export default function SSSPage() {
   },
   {
    question: "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
-   answer: "Kredi kartı, banka kartı, havale/EFT ve kapıda ödeme seçeneklerini kabul ediyoruz. Tüm ödemeler güvenli SSL sertifikası ile korunmaktadır."
+   answer: "Kredi kartı, banka kartı ve havale/EFT seçeneklerini kabul ediyoruz. Tüm ödemeler güvenli SSL sertifikası ile korunmaktadır."
   },
   {
    question: "Ürün stokta yoksa ne yapabilirim?",

@@ -118,7 +118,7 @@ export async function GET() {
  }
 }
 
-// POST - Kullanıcı sipariş oluştur (Kapıda Ödeme vb.)
+// POST - Kullanıcı sipariş oluştur
 export async function POST(request) {
  try {
   await dbConnect();
@@ -216,7 +216,7 @@ export async function POST(request) {
    status: 'Beklemede',
    total: serverGrandTotal,
    items: repricedItems,
-   payment: paymentMethod || { type: 'cash' },
+   payment: paymentMethod || { type: 'havale' },
    addressId: String(address.id),
    addressSummary: address.summary || '',
    shippingAddress: address.shippingAddress || null,
@@ -251,7 +251,7 @@ export async function POST(request) {
    const adminEmail = process.env.EMAIL_USER;
    const addrSummary = address.summary || '';
    const pmType = paymentMethod?.type || order.payment?.type || '';
-   const pmText = pmType === 'cash' ? 'Kapıda Ödeme' : (pmType === 'card' ? 'Kart ile Ödeme' : (pmType || '-'));
+   const pmText = pmType === 'card' ? 'Kart ile Ödeme' : (pmType === 'havale' ? 'Havale ve EFT ile Ödeme' : (pmType || '-'));
 
    if (adminEmail) {
     adminEmailResult = await sendAdminNewOrderEmail({
@@ -279,7 +279,7 @@ export async function POST(request) {
    if (emailNotificationsEnabled && user.email) {
     const addrSummary = address.summary || '';
     const pmType = paymentMethod?.type || order.payment?.type || '';
-    const pmText = pmType === 'cash' ? 'Kapıda Ödeme' : (pmType === 'card' ? 'Kart ile Ödeme' : (pmType || '-'));
+    const pmText = pmType === 'card' ? 'Kart ile Ödeme' : (pmType === 'havale' ? 'Havale ve EFT ile Ödeme' : (pmType || '-'));
 
     userEmailResult = await sendUserOrderConfirmationEmail({
      userEmail: user.email,

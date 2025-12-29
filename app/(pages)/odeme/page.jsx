@@ -104,7 +104,7 @@ export default function OdemePage() {
   if (!acceptedTerms) return false;
   if (!selectedAddressId) return false;
   if (paymentMethod.type === "card" && !paymentMethod.cardId) return false;
-  if (paymentMethod.type === "havale" || paymentMethod.type === "cash") return true;
+  if (paymentMethod.type === "havale") return true;
   return true;
  }, [acceptedTerms, cart, paymentMethod, selectedAddressId]);
 
@@ -126,7 +126,7 @@ export default function OdemePage() {
   setError("");
   setIsSubmitting(true);
 
-  if (paymentMethod.type === "cash" || paymentMethod.type === "havale") {
+  if (paymentMethod.type === "havale") {
    try {
     const selectedAddress = addresses.find((a) => String(a._id) === String(selectedAddressId));
     const addressSummary = selectedAddress

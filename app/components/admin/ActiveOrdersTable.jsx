@@ -1,5 +1,6 @@
 "use client";
 import normalizeText from "@/lib/normalizeText";
+import { HiX } from "react-icons/hi";
 import StatusDropdown from "./StatusDropdown";
 import ReturnStatusDropdown from "./ReturnStatusDropdown";
 
@@ -9,6 +10,7 @@ export default function ActiveOrdersTable({
  onStatusChange,
  onReturnStatusChange,
  onDetailClick,
+ onCancelClick,
  updatingOrderId,
  updatingReturnOrderId,
  onRefresh,
@@ -18,7 +20,7 @@ export default function ActiveOrdersTable({
    <div className="bg-white rounded-xl shadow-md p-6">
     <div className="flex items-center justify-between mb-4">
      <h2 className="text-xl font-bold">Son Siparişler</h2>
-     <button onClick={onRefresh} className="text-sm font-semibold text-indigo-600 hover:text-indigo-800">
+     <button onClick={onRefresh} className="text-sm cursor-pointer font-semibold text-indigo-600 hover:text-indigo-800">
       Yenile
      </button>
     </div>
@@ -31,7 +33,7 @@ export default function ActiveOrdersTable({
   <div className="bg-white rounded-xl shadow-md p-6">
    <div className="flex items-center justify-between mb-4">
     <h2 className="text-xl font-bold">Son Siparişler</h2>
-    <button onClick={onRefresh} className="text-sm font-semibold text-indigo-600 hover:text-indigo-800">
+    <button onClick={onRefresh} className="text-sm cursor-pointer font-semibold text-indigo-600 hover:text-indigo-800">
      Yenile
     </button>
    </div>
@@ -65,6 +67,8 @@ export default function ActiveOrdersTable({
        const rawStatus = (o.status || "").replace(/\s*\(.*?\)\s*/g, " ").replace(/\s+/g, " ").trim();
        const statusNorm = normalizeText(rawStatus);
        const isCancelled = statusNorm.includes("iptal");
+       const isDelivered = statusNorm.includes("teslim");
+       const canCancel = !isCancelled && !isDelivered;
        const rrStatus = String(o?.returnRequest?.status || "").trim();
        const hasReturnRequest = Boolean(rrStatus);
        const isReturnRequested = normalizeText(rrStatus) === normalizeText("Talep Edildi");
@@ -111,14 +115,27 @@ export default function ActiveOrdersTable({
           {Number(o.total || 0).toFixed(2)}
          </td>
          <td className="px-4 py-3 text-right">
-          <button
-           type="button"
-           onClick={() => onDetailClick(row)}
-           disabled={!o.orderId}
-           className={`px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition cursor-pointer ${!o.orderId ? "opacity-50 cursor-not-allowed" : ""}`}
-          >
-           Detay
-          </button>
+          <div className="flex items-center justify-end gap-2">
+           {canCancel && onCancelClick && (
+            <button
+             type="button"
+             onClick={() => onCancelClick(o.orderId)}
+             disabled={!o.orderId || updatingOrderId === o.orderId}
+             className={`p-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
+             title="Siparişi İptal Et"
+            >
+             <HiX size={18} />
+            </button>
+           )}
+           <button
+            type="button"
+            onClick={() => onDetailClick(row)}
+            disabled={!o.orderId}
+            className={`px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition cursor-pointer ${!o.orderId ? "opacity-50 cursor-not-allowed" : ""}`}
+           >
+            Detay
+           </button>
+          </div>
          </td>
         </tr>
        );

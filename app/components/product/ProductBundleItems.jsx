@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { HiChevronDown, HiChevronUp } from "react-icons/hi";
@@ -7,6 +7,9 @@ import { getProductUrl } from "@/app/utils/productUrl";
 
 export default function ProductBundleItems({ product, selectedColor }) {
  const [isExpanded, setIsExpanded] = useState(false);
+ const [bundleProducts, setBundleProducts] = useState([]);
+ const [loadingBundleProducts, setLoadingBundleProducts] = useState(false);
+
  // Seçili rengin productsInside array'ini kontrol et
  const currentColorObj = useMemo(() => {
   if (!product || !product.colors || product.colors.length === 0) return null;
@@ -16,7 +19,6 @@ export default function ProductBundleItems({ product, selectedColor }) {
  }, [product, selectedColor]);
 
  const productsInside = currentColorObj?.productsInside;
-
 
  // Grid sütun sayısını belirle: Ankastre Setler için 3, Klimalar için 2
  const gridCols = useMemo(() => {
@@ -31,34 +33,102 @@ export default function ProductBundleItems({ product, selectedColor }) {
   return "md:grid-cols-2";
  }, [product]);
 
- // productsInside artık tam ürün objeleri array'i
- // Her ürün için ilk rengi kullan
- const bundleProducts = useMemo(() => {
+ // Serial number'lardan ürünleri bul
+ useEffect(() => {
   if (!productsInside || !Array.isArray(productsInside) || productsInside.length === 0) {
-   return [];
+   setBundleProducts([]);
+   return;
   }
 
-  return productsInside.map((productItem) => {
-   // Ürünün colors array'inden ilk rengi al
-   const firstColor = productItem.colors && productItem.colors.length > 0
-    ? productItem.colors[0]
-    : null;
+  // productsInside artık string array (serial number'lar) mi yoksa object array mi kontrol et
+  const isStringArray = productsInside.length > 0 && typeof productsInside[0] === 'string';
 
-   if (!firstColor) {
-    return null;
+  if (!isStringArray) {
+   // Eski format (object array) - direkt kullan
+   const mappedProducts = productsInside.map((productItem) => {
+    // Ürünün colors array'inden ilk rengi al
+    const firstColor = productItem.colors && productItem.colors.length > 0
+     ? productItem.colors[0]
+     : null;
+
+    if (!firstColor) {
+     return null;
+    }
+
+    return {
+     product: productItem,
+     color: firstColor,
+     serialNumber: firstColor.serialNumber || ""
+    };
+   }).filter(Boolean);
+
+   setBundleProducts(mappedProducts);
+   return;
+  }
+
+  // Yeni format (string array) - serial number'lardan ürünleri bul
+  const fetchBundleProducts = async () => {
+   setLoadingBundleProducts(true);
+   try {
+    const res = await fetch("/api/products?limit=1000");
+    const data = await res.json();
+
+    if (data.success) {
+     const foundProducts = [];
+     for (const serialNumber of productsInside) {
+      // Tüm ürünlerde bu serial number'ı ara
+      const foundProduct = data.data.find((p) => {
+       if (!p.colors || !Array.isArray(p.colors)) return false;
+       return p.colors.some(c => {
+        if (typeof c === 'object' && c.serialNumber) {
+         return c.serialNumber === serialNumber;
+        }
+        return false;
+       });
+      });
+
+      if (foundProduct) {
+       // Serial number'a sahip rengi bul
+       const colorWithSerial = foundProduct.colors.find(c => {
+        if (typeof c === 'object' && c.serialNumber) {
+         return c.serialNumber === serialNumber;
+        }
+        return false;
+       });
+
+       if (colorWithSerial) {
+        foundProducts.push({
+         product: foundProduct,
+         color: colorWithSerial,
+         serialNumber: serialNumber
+        });
+       }
+      }
+     }
+     setBundleProducts(foundProducts);
+    }
+   } catch (error) {
+    console.error("Bundle products fetch error:", error);
+    setBundleProducts([]);
+   } finally {
+    setLoadingBundleProducts(false);
    }
+  };
 
-   return {
-    product: productItem,
-    color: firstColor,
-    serialNumber: firstColor.serialNumber || ""
-   };
-  }).filter(Boolean); // null değerleri filtrele
+  fetchBundleProducts();
  }, [productsInside]);
 
  // productsInside yoksa component'i render etme
  if (!productsInside || !Array.isArray(productsInside) || productsInside.length === 0) {
   return null;
+ }
+
+ if (loadingBundleProducts) {
+  return (
+   <div className="mt-6 sm:mt-8 md:mt-12 pt-6 sm:pt-8 md:pt-12 border-t">
+    <div className="text-sm text-gray-600">Yükleniyor...</div>
+   </div>
+  );
  }
 
  if (bundleProducts.length === 0) {

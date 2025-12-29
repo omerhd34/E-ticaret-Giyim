@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { MdCreditCard, MdAccountBalance, MdLocalShipping } from "react-icons/md";
+import { MdCreditCard, MdAccountBalance, MdWarning } from "react-icons/md";
 import PaymentCardCard from "./PaymentCardCard";
 
 export default function PaymentMethodSection({
@@ -46,7 +46,7 @@ export default function PaymentMethodSection({
         <div className="text-gray-500 text-sm">Kartlar yükleniyor...</div>
        ) : cards.length === 0 ? (
         <div className="border border-dashed rounded-lg p-4 text-sm text-gray-600">
-         Kayıtlı kartınız yok. Devam etmek için bir kart ekleyin veya kapıda ödeme seçin.
+         Kayıtlı kartınız yok. Devam etmek için bir kart ekleyin.
         </div>
        ) : (
         <div className="grid md:grid-cols-2 gap-3">
@@ -85,6 +85,14 @@ export default function PaymentMethodSection({
        <p className="text-sm text-gray-600">
         IBAN&apos;a para transferi yaparak ödeme yapabilirsiniz.
        </p>
+       <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
+        <MdWarning className="text-amber-600 shrink-0 mt-0.5" size={20} />
+        <p className="text-sm text-amber-700 font-medium leading-relaxed">
+         Önemli: Sipariş verdiğinde 1 saat içersinde ödeme yapılmazsa sipariş otomatik olarak iptal edilecektir.
+         Ödeme işleminizi tamamladıktan sonra lütfen ödeme dekontunuzu saklayınız.
+         Ödeme onayı için dekontunuzu müşteri hizmetlerimizle paylaşmanız gerekebilir.
+        </p>
+       </div>
        <div className="bg-gray-50 rounded-lg p-3 space-y-1.5 mt-3">
         <div className="text-sm">
          <span className="font-semibold text-gray-700">IBAN: </span>
@@ -97,22 +105,6 @@ export default function PaymentMethodSection({
        </div>
       </div>
      )}
-    </div>
-
-    <div className={`border rounded-xl p-4 ${paymentMethod.type === "cash" ? "border-indigo-300 bg-indigo-50" : "border-gray-200"}`}>
-     <label className="flex items-center gap-2 font-semibold text-gray-900 cursor-pointer">
-      <input
-       type="radio"
-       name="payment"
-       checked={paymentMethod.type === "cash"}
-       onChange={() => onPaymentMethodChange({ type: "cash" })}
-      />
-      <MdLocalShipping className="text-indigo-600" size={20} />
-      Kapıda Ödeme
-     </label>
-     <p className="text-sm text-gray-600 mt-2">
-      Kargonuz teslim edilirken ödeme yapabilirsiniz.
-     </p>
     </div>
    </div>
   </div>

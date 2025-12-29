@@ -8,7 +8,7 @@ export async function POST(request) {
  try {
   await dbConnect();
 
-  const { email, password } = await request.json();
+  const { email, password, rememberMe } = await request.json();
 
   // Kullanıcı kontrolü
   const user = await User.findOne({ email: email.toLowerCase() });
@@ -83,17 +83,25 @@ export async function POST(request) {
 
   // Cookie oluştur
   const cookieStore = await cookies();
+  const cookieOptions = {
+   httpOnly: true,
+   secure: process.env.NODE_ENV === 'production',
+   sameSite: 'strict',
+   path: '/',
+  };
+
+  // Remember me durumuna göre cookie süresi ayarla
+  if (rememberMe) {
+   cookieOptions.maxAge = 60 * 60 * 24 * 30; // 30 gün
+  } else {
+   cookieOptions.maxAge = 60 * 60 * 24; // 1 gün (tarayıcı kapanınca silinir)
+  }
+
   cookieStore.set('user-session', JSON.stringify({
    id: user._id.toString(),
    email: user.email,
    name: user.name,
-  }), {
-   httpOnly: true,
-   secure: process.env.NODE_ENV === 'production',
-   sameSite: 'strict',
-   maxAge: 60 * 60 * 24 * 30, // 30 gün
-   path: '/',
-  });
+  }), cookieOptions);
 
   return NextResponse.json({
    success: true,

@@ -31,7 +31,7 @@ Bu proje, Profilo markası beyaz eşya ve elektronik ürünlerinin satışını 
 **Sipariş ve Ödeme**
 - Sepet yönetimi ile kolay alışveriş
 - Kayıtlı adreslerden teslimat seçimi
-- Kapıda ödeme ve kart ile ödeme seçenekleri
+- Havale, EFT ve kart ile ödeme seçenekleri
 - Sipariş takibi ve geçmişi görüntüleme
 - Sipariş iptal etme
 - İade ve değişim talebi oluşturma

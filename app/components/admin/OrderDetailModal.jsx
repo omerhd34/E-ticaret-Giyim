@@ -1,8 +1,9 @@
 "use client";
 import { HiX } from "react-icons/hi";
 import { useMemo } from "react";
+import normalizeText from "@/lib/normalizeText";
 
-export default function OrderDetailModal({ show, order, user, onClose }) {
+export default function OrderDetailModal({ show, order, user, onClose, onCancel }) {
  const shipping = order?.shippingAddress || null;
  const billing = order?.billingAddress || shipping;
  const billingIsSame = useMemo(() => {
@@ -22,6 +23,11 @@ export default function OrderDetailModal({ show, order, user, onClose }) {
 
  if (!show) return null;
 
+ const statusNorm = normalizeText(order?.status || "");
+ const isCancelled = statusNorm.includes("iptal");
+ const isDelivered = statusNorm.includes("teslim");
+ const canCancel = !isCancelled && !isDelivered;
+
  return (
   <div
    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
@@ -38,9 +44,19 @@ export default function OrderDetailModal({ show, order, user, onClose }) {
        <p className="text-sm text-gray-500">Sipariş No: {order.orderId}</p>
       ) : null}
      </div>
-     <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition cursor-pointer">
-      <HiX size={22} />
-     </button>
+     <div className="flex items-center gap-3">
+      {canCancel && onCancel && (
+       <button
+        onClick={() => onCancel(order?.orderId)}
+        className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition cursor-pointer"
+       >
+        Siparişi İptal Et
+       </button>
+      )}
+      <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition cursor-pointer">
+       <HiX size={22} />
+      </button>
+     </div>
     </div>
 
     <div className="p-6 space-y-6">
@@ -71,10 +87,10 @@ export default function OrderDetailModal({ show, order, user, onClose }) {
       <div className="bg-white border rounded-xl p-4">
        <div className="text-xs text-gray-500 mb-1">Ödeme</div>
        <div className="font-bold text-gray-900">
-        {order?.payment?.type === "cash"
-         ? "Kapıda Ödeme"
-         : order?.payment?.type === "card"
-          ? "Kart ile Ödeme"
+        {order?.payment?.type === "card"
+         ? "Kart ile Ödeme"
+         : order?.payment?.type === "havale"
+          ? "Havale ve EFT ile Ödeme"
           : (order?.payment?.type ? String(order.payment.type) : "-")}
        </div>
       </div>

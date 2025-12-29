@@ -24,7 +24,7 @@ export default function CategoryProducts({ loading, products, sortBy, onClearFil
  if (products.length === 0) {
   return (
    <div className="bg-white rounded-xl shadow-sm p-6 sm:p-8 md:p-12 text-center">
-    <p className="text-gray-500 text-base sm:text-lg">Ürün bulunamadı</p>
+    <p className="text-gray-500 text-base sm:text-lg">Ürün bulunamadı.</p>
     <button
      onClick={onClearFilters}
      className="mt-4 text-sm sm:text-base text-indigo-600 hover:text-indigo-800 font-semibold"

@@ -59,7 +59,7 @@ export default function ForgotPasswordModal({ show, onClose }) {
        setError("");
        setSuccess("");
       }}
-      className="text-gray-400 hover:text-gray-600"
+      className="text-gray-400 hover:text-gray-600 cursor-pointer"
      >
       <HiX size={24} />
      </button>
@@ -101,14 +101,14 @@ export default function ForgotPasswordModal({ show, onClose }) {
         setError("");
         setSuccess("");
        }}
-       className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold transition"
+       className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold transition cursor-pointer"
       >
        İptal
       </button>
       <button
        type="submit"
        disabled={loading}
-       className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+       className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
        {loading ? "Gönderiliyor..." : "Gönder"}
       </button>

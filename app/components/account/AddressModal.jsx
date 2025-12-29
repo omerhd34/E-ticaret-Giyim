@@ -153,7 +153,7 @@ export default function AddressModal({ show, editingAddress, addressForm, setAdd
          type="checkbox"
          checked={addressForm.isDefault}
          onChange={(e) => setAddressForm({ ...addressForm, isDefault: e.target.checked })}
-         className="w-4 h-4"
+         className="w-4 h-4 cursor-pointer"
         />
         <span className="text-sm font-semibold">Varsayılan adres olarak kaydet</span>
        </label>

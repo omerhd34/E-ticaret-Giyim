@@ -1,5 +1,6 @@
 "use client";
-import { HiShieldCheck } from "react-icons/hi";
+import Link from "next/link";
+import { HiShieldCheck, HiInformationCircle, HiLockClosed } from "react-icons/hi";
 import CookiePolicyHeader from "@/app/components/policy/CookiePolicyHeader";
 import PolicySection from "@/app/components/policy/PolicySection";
 import CookieTypesSection from "@/app/components/policy/CookieTypesSection";
@@ -88,6 +89,79 @@ export default function CerezPolitikasiPage() {
         cihazınızda saklanır
        </li>
       </ul>
+      <p className="leading-relaxed mt-4">
+       Çerezlerin saklanma süreleri, çerez türüne ve kullanım amacına göre değişiklik gösterebilir.
+       Detaylı bilgi için çerez ayarlarınızı kontrol edebilirsiniz.
+      </p>
+     </PolicySection>
+
+     {/* YASAL DAYANAK */}
+     <PolicySection icon={<HiLockClosed className="text-indigo-600" size={24} />} title="Yasal Dayanak">
+      <p className="leading-relaxed">
+       Çerez kullanımımız, 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) ve
+       6502 sayılı Tüketicinin Korunması Hakkında Kanun hükümlerine uygun olarak gerçekleştirilmektedir.
+      </p>
+      <p className="leading-relaxed mt-3">
+       Zorunlu çerezler, web sitemizin çalışması için gereklidir ve bu çerezler için açık rıza alınmaz.
+       Diğer çerez türleri için rıza gerekmekte olup, çerez tercihlerinizi istediğiniz zaman değiştirebilirsiniz.
+      </p>
+     </PolicySection>
+
+     {/* GİZLİLİK POLİTİKASI */}
+     <PolicySection icon={<HiInformationCircle className="text-indigo-600" size={24} />} title="Gizlilik ve Veri Koruması">
+      <p className="leading-relaxed">
+       Çerezler aracılığıyla toplanan kişisel verilerin işlenmesi, saklanması ve korunması hakkında
+       detaylı bilgi için{" "}
+       <Link href="/gizlilik-politikasi" className="text-indigo-600 hover:text-indigo-700 font-semibold">
+        Gizlilik Politikası
+       </Link>{" "}
+       sayfamızı inceleyebilirsiniz.
+      </p>
+      <p className="leading-relaxed mt-3">
+       Kişisel verilerinizin işlenmesi, paylaşılması ve haklarınız hakkında bilgi almak için
+       gizlilik politikamızı mutlaka okuyunuz.
+      </p>
+     </PolicySection>
+
+     {/* İLETİŞİM */}
+     <PolicySection title="İletişim ve Sorularınız">
+      <p className="leading-relaxed">
+       Çerez politikamız hakkında sorularınız veya görüşleriniz varsa, bizimle iletişime geçebilirsiniz:
+      </p>
+      <div className="bg-gray-50 rounded-lg p-4 mt-4 space-y-2">
+       <p className="font-semibold text-gray-900">Yazıcı Ticaret</p>
+       <p className="text-gray-700">
+        <strong>E-posta:</strong>{" "}
+        <a href="mailto:info@yazici.gen.tr" className="text-indigo-600 hover:text-indigo-700">
+         info@yazici.gen.tr
+        </a>
+       </p>
+       <p className="text-gray-700">
+        <strong>Telefon:</strong> 0544 796 77 70
+       </p>
+      </div>
+     </PolicySection>
+
+     {/* GÜNCELLEMELER */}
+     <PolicySection title="Çerez Politikası Güncellemeleri">
+      <p className="leading-relaxed">
+       Bu Çerez Politikası, yasal düzenlemelerdeki değişiklikler veya işletme politikalarımızdaki
+       güncellemeler nedeniyle zaman zaman güncellenebilir. Önemli değişiklikler yapıldığında,
+       sitemiz üzerinden veya e-posta yoluyla sizleri bilgilendiririz.
+      </p>
+      <p className="leading-relaxed mt-3">
+       Bu sayfayı düzenli olarak kontrol etmenizi öneririz. Politikadaki değişiklikler,
+       yayınlandığı tarihten itibaren geçerlidir.
+      </p>
+      <div className="bg-gray-50 rounded-lg p-4 mt-4">
+       <p className="text-sm text-gray-600">
+        <strong>Son Güncelleme Tarihi:</strong> {new Date().toLocaleDateString('tr-TR', {
+         year: 'numeric',
+         month: 'long',
+         day: 'numeric'
+        })}
+       </p>
+      </div>
      </PolicySection>
     </div>
    </div>

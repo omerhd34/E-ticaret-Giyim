@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { HiLockClosed, HiMail, HiArrowLeft } from "react-icons/hi";
+import { HiLockClosed, HiMail, HiArrowLeft, HiEye, HiEyeOff } from "react-icons/hi";
 import { MdError, MdCheckCircle } from "react-icons/md";
 
 export default function SifreSifirlaPage() {
@@ -13,6 +13,8 @@ export default function SifreSifirlaPage() {
  const [loading, setLoading] = useState(false);
  const [error, setError] = useState("");
  const [success, setSuccess] = useState("");
+ const [showPassword, setShowPassword] = useState(false);
+ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
  const [formData, setFormData] = useState({
   password: "",
   confirmPassword: "",
@@ -84,7 +86,7 @@ export default function SifreSifirlaPage() {
         YAZICI TİCARET
        </h1>
       </Link>
-      <p className="text-gray-600">Yeni şifrenizi belirleyin</p>
+      <p className="text-gray-600">Yeni şifrenizi belirleyiniz.</p>
      </div>
 
      <div className="bg-white rounded-xl shadow-lg p-8">
@@ -122,17 +124,24 @@ export default function SifreSifirlaPage() {
           size={20}
          />
          <input
-          type="password"
+          type={showPassword ? "text" : "password"}
           value={formData.password}
           onChange={(e) =>
            setFormData({ ...formData, password: e.target.value })
           }
-          className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+          className="w-full pl-11 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
           placeholder="••••••••••"
           required
           minLength={6}
           disabled={!token}
          />
+         <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+         >
+          {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
+         </button>
         </div>
        </div>
 
@@ -146,24 +155,31 @@ export default function SifreSifirlaPage() {
           size={20}
          />
          <input
-          type="password"
+          type={showConfirmPassword ? "text" : "password"}
           value={formData.confirmPassword}
           onChange={(e) =>
            setFormData({ ...formData, confirmPassword: e.target.value })
           }
-          className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+          className="w-full pl-11 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
           placeholder="••••••••••"
           required
           minLength={6}
           disabled={!token}
          />
+         <button
+          type="button"
+          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+         >
+          {showConfirmPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
+         </button>
         </div>
        </div>
 
        <button
         type="submit"
         disabled={loading || !token}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl cursor-pointer"
        >
         {loading ? "Şifre Sıfırlanıyor..." : "Şifreyi Sıfırla"}
        </button>
@@ -172,7 +188,7 @@ export default function SifreSifirlaPage() {
       <div className="mt-6 text-center">
        <Link
         href="/giris"
-        className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition-colors duration-200"
+        className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition-colors duration-200 cursor-pointer"
        >
         <HiArrowLeft size={18} />
         Giriş Sayfasına Dön

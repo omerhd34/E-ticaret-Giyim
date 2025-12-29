@@ -222,6 +222,16 @@ export default function ProductRequestModal({ show, onClose, onSuccess }) {
         </div>
        )}
 
+       {/* Bilgilendirme */}
+       <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+        <div className="flex items-start gap-2 ">
+         <HiInformationCircle className="text-blue-600 shrink-0 mt-0.5" size={18} />
+         <p className="text-sm text-blue-800 leading-relaxed">
+          <span className="font-semibold">Bilgilendirme:</span> Ürün isteğiniz gönderildikten sonra ekibimiz tarafından değerlendirilecektir. İsteğiniz onaylandığında, talep ettiğiniz ürün yakın zamanda şubelerimize gelecektir ve stok durumu hakkında size e-posta veya telefon ile bilgi verilecektir. İsteğiniz iptal edilirse, bu ürün şu anda tedarik edilememektedir veya stokta bulunmamaktadır. Her durumda size en kısa sürede geri dönüş yapılacaktır.
+         </p>
+        </div>
+       </div>
+
        {/* İletişim Bilgileri - Sadece giriş yapmamış kullanıcılar için */}
        {!isAuthenticated && (
         <div>
@@ -288,15 +298,10 @@ export default function ProductRequestModal({ show, onClose, onSuccess }) {
 
        {/* Ürün Bilgileri */}
        <div>
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-3">
-         <div className="flex items-start gap-2 ">
-          <HiInformationCircle className="text-blue-600 shrink-0 mt-0.5" size={18} />
-          <p className="text-sm text-blue-800 leading-relaxed">
-           <span className="font-semibold">Bilgilendirme:</span> Ürün isteğiniz gönderildikten sonra ekibimiz tarafından değerlendirilecektir. İsteğiniz onaylandığında, talep ettiğiniz ürün yakın zamanda şubelerimize gelecektir ve stok durumu hakkında size e-posta veya telefon ile bilgi verilecektir. İsteğiniz iptal edilirse, bu ürün şu anda tedarik edilememektedir veya stokta bulunmamaktadır. Her durumda size en kısa sürede geri dönüş yapılacaktır.
-          </p>
-         </div>
-        </div>
-
+        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+         <HiShoppingBag size={20} className="text-indigo-600" />
+         Ürün Bilgileri
+        </h3>
         <div className="space-y-4">
          <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -326,7 +331,7 @@ export default function ProductRequestModal({ show, onClose, onSuccess }) {
             value={form.brand || ""}
             onChange={handleChange}
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-            placeholder="Örn: Bosch, Siemens"
+            placeholder="Örn: Bosch, Sony, Philips, Samsung, etc."
            />
           </div>
 

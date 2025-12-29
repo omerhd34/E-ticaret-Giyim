@@ -25,7 +25,7 @@ export default function FAQSection() {
   },
   {
    question: "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
-   answer: "Kredi kartı, banka kartı, havale/EFT ve kapıda ödeme seçeneklerini kabul ediyoruz. Tüm ödemeler güvenli ödeme altyapısı ile korunmaktadır."
+   answer: "Kredi kartı, banka kartı ve havale/EFT seçeneklerini kabul ediyoruz. Tüm ödemeler güvenli ödeme altyapısı ile korunmaktadır."
   }
  ];
 

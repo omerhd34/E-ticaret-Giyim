@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import { HiArrowRight } from "react-icons/hi";
 import { MENU_ITEMS } from "@/app/utils/menuItems";
 import { useCart } from "@/context/CartContext";
 import { useComparison } from "@/context/ComparisonContext";
@@ -24,6 +25,9 @@ import ProductBundleItems from "@/app/components/product/ProductBundleItems";
 import ProductLoading from "@/app/components/product/ProductLoading";
 import ProductNotFound from "@/app/components/product/ProductNotFound";
 import Toast from "@/app/components/ui/Toast";
+import { ProductSchema, BreadcrumbSchema } from "@/app/components/seo/StructuredData";
+import { getProductUrl } from "@/app/utils/productUrl";
+import DynamicMetadata from "@/app/components/seo/DynamicMetadata";
 
 export default function KategoriPage() {
  const params = useParams();
@@ -68,6 +72,10 @@ export default function KategoriPage() {
  const [checkingRating, setCheckingRating] = useState(true);
  const [ratingMessage, setRatingMessage] = useState("");
  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+
+ // Kampanyalar için state'ler
+ const [campaignsData, setCampaignsData] = useState([]);
+ const [campaignsLoading, setCampaignsLoading] = useState(true);
 
  const { addToCart, addToFavorites, removeFromFavorites, isFavorite } = useCart();
  const { addToComparison, removeFromComparison, isInComparison } = useComparison();
@@ -879,6 +887,33 @@ export default function KategoriPage() {
   return products.length;
  }, [products]);
 
+ // Kampanyalar sayfası kontrolü
+ const isCampaignsPage = useMemo(() => {
+  return slug.length > 0 && decodeURIComponent(slug[0]) === "kampanyalar";
+ }, [slug]);
+
+ // Kampanyaları yükle
+ useEffect(() => {
+  if (isCampaignsPage) {
+   const fetchCampaigns = async () => {
+    try {
+     const res = await fetch("/api/campaigns");
+     const data = await res.json();
+     if (data.success) {
+      setCampaignsData(data.data || []);
+     }
+    } catch (error) {
+     console.error("Kampanyalar yüklenemedi:", error);
+    } finally {
+     setCampaignsLoading(false);
+    }
+   };
+   fetchCampaigns();
+  } else {
+   setCampaignsLoading(false);
+  }
+ }, [isCampaignsPage]);
+
  if (isProductDetailPage) {
   if (loading) {
    return <ProductLoading />;
@@ -888,9 +923,61 @@ export default function KategoriPage() {
    return <ProductNotFound />;
   }
 
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000');
+
+  // Breadcrumb items for structured data
+  const breadcrumbItems = [
+   { name: 'Ana Sayfa', url: '/' },
+   { name: product.category || 'Kategori', url: `/kategori/${slug[0]}` },
+  ];
+
+  if (product.subCategory) {
+   breadcrumbItems.push({
+    name: product.subCategory,
+    url: slug.length >= 2 ? `/kategori/${slug[0]}/${slug[1]}` : `/kategori/${slug[0]}`,
+   });
+  }
+
+  // Ürün URL'ini getProductUrl ile oluştur
+  const currentColorSerialNumber = selectedColorObj?.serialNumber ||
+   (product.colors && product.colors.length > 0 && typeof product.colors[0] === 'object'
+    ? product.colors[0].serialNumber
+    : null) ||
+   product.serialNumber;
+
+  const productUrl = getProductUrl(product, currentColorSerialNumber);
+
+  breadcrumbItems.push({
+   name: product.name,
+   url: productUrl,
+  });
+
+  // Metadata for product detail page
+  const productTitle = product ? `${product.name} - Fiyat ve Özellikler` : '';
+  const productDescription = product
+   ? `${product.name} ${product.brand ? `(${product.brand})` : ''} - ${product.description || 'En uygun fiyat ve hızlı kargo ile Yazıcı Ticaret\'te. Tüm özellikler ve teknik detaylar.'}`
+   : '';
+  const productImage = product && product.images && product.images.length > 0
+   ? product.images[0].startsWith('http') ? product.images[0] : product.images[0]
+   : '/icon.svg';
+  const productCanonical = productUrl;
+
   return (
    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 md:py-8 lg:py-12">
     <Toast toast={toast} setToast={setToast} />
+
+    {/* Dynamic Metadata */}
+    <DynamicMetadata
+     title={productTitle}
+     description={productDescription}
+     keywords={[product?.name, product?.brand, product?.category, 'beyaz eşya', 'elektronik', 'yazıcı ticaret']}
+     ogImage={productImage}
+     canonical={productCanonical}
+    />
+
+    {/* Structured Data */}
+    <ProductSchema product={product} baseUrl={baseUrl} productUrl={productUrl} />
+    <BreadcrumbSchema items={breadcrumbItems} baseUrl={baseUrl} />
 
     <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 max-w-8xl">
      <ProductBreadcrumb product={product} />
@@ -989,38 +1076,96 @@ export default function KategoriPage() {
   );
  }
 
- // Kampanyalar sayfası için özel görünüm
- const isCampaignsPage = slug.length > 0 && decodeURIComponent(slug[0]) === "kampanyalar";
-
  if (isCampaignsPage) {
+
   return (
    <div className="min-h-screen bg-gray-50">
-    <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white py-6 sm:py-8 md:py-12">
-     <div className="container mx-auto px-3 sm:px-4 md:px-6">
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-black mb-2">Kampanyalar</h1>
+    {/* Header */}
+    <div className="bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 text-white py-8 sm:py-10 md:py-14">
+     <div className="container mx-auto px-4 sm:px-6 md:px-8">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 text-center">Kampanyalar</h1>
+      <p className="text-lg sm:text-xl text-center text-indigo-100 max-w-2xl mx-auto">
+       Özel fırsatlar ve kampanyalarımızı kaçırmayın!
+      </p>
      </div>
     </div>
-    <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
-     <div className="flex justify-center items-center">
-      <div className="w-full max-w-2xl">
-       <Image
-        src="/yilbasi_cekilisi.png"
-        alt="Yılbaşı Çekilişi"
-        width={600}
-        height={400}
-        className="w-full h-auto rounded-lg shadow-lg"
-        priority
-       />
+
+    {/* Kampanyalar Grid */}
+    <div className="container mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-10 md:py-12">
+     {campaignsLoading ? (
+      <div className="text-center py-12">
+       <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+       <p className="text-gray-600">Kampanyalar yükleniyor...</p>
       </div>
-     </div>
+     ) : campaignsData.length === 0 ? (
+      <div className="text-center py-12">
+       <p className="text-gray-600 text-lg">Henüz kampanya bulunmamaktadır.</p>
+      </div>
+     ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 max-w-7xl mx-auto">
+       {campaignsData.map((campaign) => (
+        <div
+         key={campaign._id}
+         className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1"
+        >
+         {/* Görsel Container */}
+         <div className="relative aspect-4/3 overflow-hidden bg-gray-100">
+          <Image
+           src={campaign.image}
+           alt={campaign.title}
+           fill
+           className="object-cover transition-transform duration-500 group-hover:scale-110"
+           sizes="(max-width: 768px) 100vw, 50vw"
+           priority={campaignsData.indexOf(campaign) === 0}
+          />
+          {/* Overlay Gradient */}
+          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+         </div>
+
+         {/* İçerik */}
+         <div className="p-6 sm:p-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors duration-300">
+           {campaign.title}
+          </h2>
+          <p className="text-gray-600 text-sm sm:text-base mb-4 line-clamp-2">
+           {campaign.description}
+          </p>
+          <button
+           className="inline-flex items-center px-6 py-3 bg-linear-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg cursor-pointer"
+           onClick={() => router.push(campaign.link || '/kategori/indirim')}
+          >
+           Kampanyayı İncele
+           <HiArrowRight className="ml-2 w-5 h-5" />
+          </button>
+         </div>
+        </div>
+       ))}
+      </div>
+     )}
     </div>
    </div>
   );
  }
 
+ // Metadata for category listing page
+ const categoryName = getCategoryName();
+ const categoryTitle = categoryName ? `${categoryName} - Ürünler ve Fiyatları` : 'Kategori';
+ const categoryDescription = categoryName
+  ? `${categoryName} kategorisindeki tüm ürünler. Profilo ve LG markası beyaz eşya ve elektronik ürünlerinde en uygun fiyatlar. Hızlı kargo ve montaj hizmeti.`
+  : 'Yazıcı Ticaret ürün kategorileri. En uygun fiyatlarla beyaz eşya ve elektronik ürünler.';
+ const categoryCanonical = typeof window !== 'undefined' ? window.location.pathname : '';
+
  return (
   <div className="min-h-screen bg-gray-50">
-   <CategoryHeader categoryName={getCategoryName()} productCount={expandedProductsCount} />
+   {/* Dynamic Metadata for Category */}
+   <DynamicMetadata
+    title={categoryTitle}
+    description={categoryDescription}
+    keywords={[categoryName, 'beyaz eşya', 'elektronik', 'profilo', 'lg', 'yazıcı ticaret']}
+    canonical={categoryCanonical}
+   />
+
+   <CategoryHeader categoryName={categoryName} productCount={expandedProductsCount} />
    <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
     <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
      <CategoryFiltersSidebar

@@ -5,7 +5,7 @@ import { useCart } from "@/context/CartContext";
 import Image from "next/image";
 import Link from "next/link";
 import { HiX, HiSwitchHorizontal, HiHeart, HiTrash } from "react-icons/hi";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaShoppingCart, FaStar, FaRegStar } from "react-icons/fa";
 import { getProductUrl } from "@/app/utils/productUrl";
 import Toast from "@/app/components/ui/Toast";
 
@@ -407,14 +407,11 @@ export default function UrunKarsilastirPage() {
             <div className="flex items-center justify-center gap-2">
              <div className="flex text-yellow-400">
               {[...Array(5)].map((_, i) => (
-               <svg
-                key={i}
-                className={`w-4 h-4 ${i < Math.round(product.rating || 0) ? "fill-current" : "fill-transparent stroke-gray-300"}`}
-                viewBox="0 0 20 20"
-                strokeWidth={1}
-               >
-                <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-               </svg>
+               i < Math.round(product.rating || 0) ? (
+                <FaStar key={i} className="w-4 h-4" />
+               ) : (
+                <FaRegStar key={i} className="w-4 h-4 text-gray-300" />
+               )
               ))}
              </div>
              <span className="text-sm text-gray-600">

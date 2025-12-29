@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { HiCheckCircle, HiXCircle, HiShieldCheck } from "react-icons/hi";
+import { HiCheckCircle, HiXCircle, HiShieldCheck, HiMail, HiPhone, HiInformationCircle, HiClock, HiScale, HiTruck, HiCube } from "react-icons/hi";
 import TermsHeader from "@/app/components/policy/TermsHeader";
 import TermsIntroduction from "@/app/components/policy/TermsIntroduction";
 import PolicySection from "@/app/components/policy/PolicySection";
@@ -13,6 +13,36 @@ export default function KullanimKosullariPage() {
 
     <div className="bg-white rounded-xl shadow-md p-8 md:p-12 space-y-8">
      <TermsIntroduction />
+
+     {/* İLETİŞİM BİLGİLERİ */}
+     <PolicySection
+      icon={<HiInformationCircle className="text-indigo-600" size={24} />}
+      title="İletişim Bilgileri"
+     >
+      <>
+       <p className="leading-relaxed">
+        <strong>Satıcı / Hizmet Sağlayıcı:</strong>
+       </p>
+       <div className="bg-gray-50 rounded-lg p-4 mt-4 space-y-2">
+        <p className="font-semibold text-gray-900">Yazıcı Ticaret</p>
+        <p className="text-gray-700">
+         <strong>Adres 1:</strong> Kemalpaşa mahallesi, Atatürk bulvarı, No:54/E, İnegöl/Bursa
+        </p>
+        <p className="text-gray-700">
+         <strong>Adres 2:</strong> Cuma mahallesi, Atatürk bulvarı, No:51, İnegöl/Bursa
+        </p>
+        <p className="text-gray-700">
+         <strong>E-posta:</strong>{" "}
+         <a href="mailto:info@yazici.gen.tr" className="text-indigo-600 hover:text-indigo-700">
+          info@yazici.gen.tr
+         </a>
+        </p>
+        <p className="text-gray-700">
+         <strong>Telefon:</strong> 0544 796 77 70
+        </p>
+       </div>
+      </>
+     </PolicySection>
 
      <PolicySection
       icon={<HiCheckCircle className="text-indigo-600" size={24} />}
@@ -64,6 +94,35 @@ export default function KullanimKosullariPage() {
       </>
      </PolicySection>
 
+     <PolicySection title="Mesafeli Satış Sözleşmesi">
+      <>
+       <p className="leading-relaxed">
+        6502 sayılı Tüketicinin Korunması Hakkında Kanun uyarınca düzenlenen bu sözleşme,
+        Yazıcı Ticaret ile tüketici arasında yapılan mesafeli satış sözleşmesidir.
+       </p>
+       <p className="leading-relaxed mt-3">
+        Bu sözleşme, web sitemiz üzerinden yapılan satış işlemlerinin tüm koşullarını kapsar.
+        Sipariş vererek bu sözleşmeyi kabul etmiş sayılırsınız.
+       </p>
+      </>
+     </PolicySection>
+
+     <PolicySection title="Ön Bilgilendirme">
+      <>
+       <p className="leading-relaxed">
+        Sipariş vermeden önce aşağıdaki bilgileri size sunuyoruz:
+       </p>
+       <ul className="list-disc list-inside space-y-2 ml-4">
+        <li>Satıcı bilgileri (yukarıda belirtilmiştir)</li>
+        <li>Ürünün temel özellikleri, fiyatı ve vergiler dahil toplam tutarı</li>
+        <li>Ödeme, teslimat ve ifa bilgileri</li>
+        <li>Cayma hakkı koşulları</li>
+        <li>Şikayet ve itiraz hakkı</li>
+        <li>Garanti koşulları</li>
+       </ul>
+      </>
+     </PolicySection>
+
      <PolicySection title="Sipariş ve Ödeme">
       <>
        <p className="leading-relaxed">
@@ -71,12 +130,47 @@ export default function KullanimKosullariPage() {
        </p>
        <ul className="list-disc list-inside space-y-2 ml-4">
         <li>Sipariş vermek, ürünü satın alma teklifi yapmak anlamına gelir.</li>
+        <li>Siparişiniz onaylandığında sözleşme kurulmuş sayılır ve size e-posta ile bildirilir.</li>
         <li>Sipariş onayı e-posta ile gönderilir.</li>
         <li>Ödeme işlemleri güvenli ödeme sağlayıcıları aracılığıyla yapılır.</li>
-        <li>Ödeme bilgileriniz güvenli şekilde işlenir ve saklanmaz.</li>
-        <li>Fiyatlar Türk Lirası (₺) cinsindendir.</li>
+        <li>Kredi kartı bilgileriniz güvenli şekilde işlenir ve sistemlerimizde saklanmaz.</li>
+        <li>Fiyatlar Türk Lirası (₺) cinsindendir ve KDV dahildir.</li>
+        <li>Fiyatlar sipariş anındaki fiyatlardır ve değişiklik gösterebilir.</li>
+        <li>Fiyat hatalarından kaynaklanan siparişleri iptal etme hakkımız saklıdır.</li>
+       </ul>
+      </>
+     </PolicySection>
+
+     <PolicySection icon={<HiTruck className="text-indigo-600" size={24} />} title="Teslimat Koşulları">
+      <>
+       <p className="leading-relaxed">
+        Teslimat ile ilgili bilgiler:
+       </p>
+       <ul className="list-disc list-inside space-y-2 ml-4">
         <li>Tüm Türkiye geneline nakliye ve montaj hizmeti sunulmaktadır.</li>
         <li>Bursa iline ücretsiz teslimat yapılmaktadır.</li>
+        <li>Diğer illere teslimat ücreti kargo firması tarafından belirlenir.</li>
+        <li>Teslimat süresi stok durumuna göre değişiklik gösterebilir.</li>
+        <li>Teslimat adresiniz sipariş sırasında belirttiğiniz adrestir.</li>
+        <li>Ürün teslim edildiğinde, teslimat tutanağında imza alınır.</li>
+        <li>Ürün teslim alındığında, teslim aldığınız tarih cayma hakkı süresinin başlangıcıdır.</li>
+       </ul>
+      </>
+     </PolicySection>
+
+     <PolicySection title="Cayma Hakkı">
+      <>
+       <p className="leading-relaxed">
+        6502 sayılı Tüketicinin Korunması Hakkında Kanun uyarınca, mesafeli satışlarda cayma hakkınız bulunmaktadır:
+       </p>
+       <ul className="list-disc list-inside space-y-2 ml-4">
+        <li>Ürünleri teslim aldığınız tarihten itibaren <strong>14 gün içinde</strong> hiçbir gerekçe göstermeksizin cayma hakkınızı kullanabilirsiniz.</li>
+        <li>Cayma bildirimi yazılı olarak (e-posta, mektup, faks) yapılmalıdır.</li>
+        <li>Cayma hakkını kullandığınızda, ürünün orijinal ambalajında, etiketleriyle ve kullanılmamış olması gerekir.</li>
+        <li>Cayma hakkınızın kullanılması halinde, ödediğiniz tutar 14 gün içinde iade edilir.</li>
+        <li>Cayma nedeniyle yapılan iade masrafları tarafınıza aittir, ancak ürünün bozuk veya hatalı teslim edilmesi durumunda iade masrafları bize aittir.</li>
+        <li>Özel sipariş üzerine üretilen veya kişiselleştirilen ürünlerde cayma hakkı bulunmaz.</li>
+        <li>Detaylı bilgi için <Link href="/iade-degisim" className="text-indigo-600 hover:underline">İade &amp; Değişim</Link> sayfasını ziyaret edin.</li>
        </ul>
       </>
      </PolicySection>
@@ -87,11 +181,28 @@ export default function KullanimKosullariPage() {
         İade ve değişim koşulları:
        </p>
        <ul className="list-disc list-inside space-y-2 ml-4">
-        <li>Ürünleri teslim aldığınız tarihten itibaren 14 gün içinde iade edebilirsiniz.</li>
+        <li>İade talebinizi e-posta veya iletişim kanallarımız üzerinden iletebilirsiniz.</li>
         <li>Ürün orijinal ambalajında, etiketleriyle ve kullanılmamış olmalıdır.</li>
-        <li>İade işlemleri ücretsizdir.</li>
-        <li>Özel ürünlerde iade kabul edilmez.</li>
+        <li>İade işlemleri ücretsizdir (cayma hakkı kapsamındaki iadeler hariç).</li>
+        <li>Ürünün iade edilmesinden sonra, ödeme yönteminize göre iade işlemi gerçekleştirilir.</li>
+        <li>İade edilen ürünler kontrol edildikten sonra iade işlemi tamamlanır.</li>
         <li>Detaylı bilgi için <Link href="/iade-degisim" className="text-indigo-600 hover:underline">İade &amp; Değişim</Link> sayfasını ziyaret edin.</li>
+       </ul>
+      </>
+     </PolicySection>
+
+     <PolicySection icon={<HiCube className="text-indigo-600" size={24} />} title="Garanti ve Servis">
+      <>
+       <p className="leading-relaxed">
+        Garanti ve servis koşulları:
+       </p>
+       <ul className="list-disc list-inside space-y-2 ml-4">
+        <li>Satılan tüm ürünler, üretici firma tarafından belirlenen garanti koşullarına tabidir.</li>
+        <li>Garanti süresi ve koşulları, ürün kategorisine göre değişiklik gösterebilir.</li>
+        <li>Garanti belgeleri, ürün teslimi sırasında size verilir.</li>
+        <li>Garanti kapsamındaki ürünler için yetkili servis merkezlerine yönlendirme yapılır.</li>
+        <li>Garanti kapsamı dışındaki arızalar ve hasarlar için ayrı ücret talep edilir.</li>
+        <li>Garanti süresi, ürünün teslim alındığı tarihten itibaren başlar.</li>
        </ul>
       </>
      </PolicySection>
@@ -146,11 +257,59 @@ export default function KullanimKosullariPage() {
       </>
      </PolicySection>
 
+     <PolicySection icon={<HiScale className="text-indigo-600" size={24} />} title="Tüketici Hakları ve Şikayetler">
+      <>
+       <p className="leading-relaxed">
+        Tüketici haklarınız ve şikayet süreçleri:
+       </p>
+       <ul className="list-disc list-inside space-y-2 ml-4">
+        <li>Herhangi bir sorunuz, şikayetiniz veya talebiniz için bizimle iletişime geçebilirsiniz.</li>
+        <li>Şikayetleriniz en geç 30 gün içinde yanıtlanır.</li>
+        <li>Şikayetlerinizi e-posta, telefon veya mağazalarımıza başvurarak iletebilirsiniz.</li>
+        <li>Anlaşmazlıklar öncelikle görüşmeler yoluyla çözülmeye çalışılır.</li>
+        <li>Çözülemeyen anlaşmazlıklar için Tüketici Hakem Heyetleri ve Tüketici Mahkemelerine başvurabilirsiniz.</li>
+        <li>Tüketici hakları konusunda detaylı bilgi için{" "}
+         <a
+          href="https://www.tuketici.gov.tr"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-indigo-600 hover:text-indigo-700"
+         >
+          www.tuketici.gov.tr
+         </a>{" "}
+         adresini ziyaret edebilirsiniz.
+        </li>
+       </ul>
+      </>
+     </PolicySection>
+
+     <PolicySection title="Uygulanacak Hukuk ve Yetkili Mahkeme">
+      <>
+       <p className="leading-relaxed">
+        Bu sözleşme Türkiye Cumhuriyeti yasalarına tabidir. Bu sözleşmeden doğan uyuşmazlıkların çözümünde
+        öncelikle Tüketici Hakem Heyetleri&apos;ne başvurulur. Tüketici Hakem Heyetleri&apos;nin görevli
+        olmadığı veya yetkisinin aşıldığı durumlarda, Bursa mahkemeleri ve icra daireleri yetkilidir.
+       </p>
+      </>
+     </PolicySection>
+
      <PolicySection title="Koşul Değişiklikleri">
-      <p className="text-gray-700 leading-relaxed">
-       Bu Kullanım Koşulları zaman zaman güncellenebilir. Önemli değişikliklerde size bildirim yapacağız.
-       Güncel koşulları bu sayfadan takip edebilirsiniz. Değişikliklerden sonra web sitemizi kullanmaya devam etmeniz, güncellenmiş koşulları kabul ettiğiniz anlamına gelir.
-      </p>
+      <>
+       <p className="text-gray-700 leading-relaxed">
+        Bu Kullanım Koşulları ve Mesafeli Satış Sözleşmesi zaman zaman güncellenebilir. Önemli değişikliklerde size bildirim yapacağız.
+        Güncel koşulları bu sayfadan takip edebilirsiniz. Değişikliklerden sonra web sitemizi kullanmaya devam etmeniz,
+        güncellenmiş koşulları kabul ettiğiniz anlamına gelir.
+       </p>
+       <div className="bg-gray-50 rounded-lg p-4 mt-4">
+        <p className="text-sm text-gray-600">
+         <strong>Son Güncelleme Tarihi:</strong> {new Date().toLocaleDateString('tr-TR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+         })}
+        </p>
+       </div>
+      </>
      </PolicySection>
     </div>
    </div>

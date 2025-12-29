@@ -107,7 +107,7 @@ export default function ProductImageGallery({
     >
      <button
       onClick={closeLightbox}
-      className="absolute top-4 right-4 text-white hover:text-gray-300 transition z-10 bg-black/50 rounded-full p-2"
+      className="absolute top-4 right-4 text-white hover:text-gray-300 transition z-10 bg-black/50 rounded-full p-2 cursor-pointer"
       aria-label="Kapat"
      >
       <HiX size={24} />
@@ -120,7 +120,7 @@ export default function ProductImageGallery({
          e.stopPropagation();
          prevImage();
         }}
-        className="absolute left-4 text-white hover:text-gray-300 transition z-10 bg-black/50 rounded-full p-2"
+        className="absolute left-4 text-white hover:text-gray-300 transition z-10 bg-black/50 rounded-full p-2 cursor-pointer"
         aria-label="Önceki resim"
        >
         <HiChevronLeft size={24} />
@@ -130,7 +130,7 @@ export default function ProductImageGallery({
          e.stopPropagation();
          nextImage();
         }}
-        className="absolute right-4 text-white hover:text-gray-300 transition z-10 bg-black/50 rounded-full p-2"
+        className="absolute right-4 text-white hover:text-gray-300 transition z-10 bg-black/50 rounded-full p-2 cursor-pointer"
         aria-label="Sonraki resim"
        >
         <HiChevronRight size={24} />

@@ -45,10 +45,8 @@ export default function UserOrderDetailModal({ show, order, addresses, onClose, 
  }, [shipping, billing]);
 
  const payment = order?.payment || null;
- const statusNorm = normalizeText(order?.status || "");
- const inferredPayment = statusNorm.includes("kapida") ? { type: "cash" } : null;
- const finalPayment = payment || inferredPayment;
- const paymentText = finalPayment?.type === "cash" ? "Kapıda Ödeme" : finalPayment?.type === "card" ? "Kart ile Ödeme" : (finalPayment?.type ? String(finalPayment.type) : "Bilinmiyor");
+ const finalPayment = payment;
+ const paymentText = finalPayment?.type === "card" ? "Kart ile Ödeme" : finalPayment?.type === "havale" ? "Havale ve EFT ile Ödeme" : (finalPayment?.type ? String(finalPayment.type) : "Bilinmiyor");
 
  const items = Array.isArray(order?.items) ? order.items : [];
  const groups = new Map();

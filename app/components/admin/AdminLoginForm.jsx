@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { HiLockClosed, HiUser, HiLogin } from "react-icons/hi";
+import { HiLockClosed, HiUser, HiLogin, HiEye, HiEyeOff } from "react-icons/hi";
 import AlertMessage from "@/app/components/auth/AlertMessage";
 
 export default function AdminLoginForm({ onSuccess }) {
@@ -8,6 +8,7 @@ export default function AdminLoginForm({ onSuccess }) {
  const [password, setPassword] = useState("");
  const [loading, setLoading] = useState(false);
  const [error, setError] = useState("");
+ const [showPassword, setShowPassword] = useState(false);
 
  const handleSubmit = async (e) => {
   e.preventDefault();
@@ -79,13 +80,20 @@ export default function AdminLoginForm({ onSuccess }) {
        size={20}
       />
       <input
-       type="password"
+       type={showPassword ? "text" : "password"}
        value={password}
        onChange={(e) => setPassword(e.target.value)}
-       className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+       className="w-full pl-11 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
        placeholder="••••••••••"
        required
       />
+      <button
+       type="button"
+       onClick={() => setShowPassword(!showPassword)}
+       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+      >
+       {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
+      </button>
      </div>
     </div>
 

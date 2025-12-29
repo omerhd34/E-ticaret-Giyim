@@ -122,7 +122,7 @@ export default function GirisPage() {
          setError("");
          setSuccess("");
         }}
-        className={`flex-1 py-4 font-bold text-center transition ${activeTab === "giris"
+        className={`flex-1 py-4 font-bold text-center transition cursor-pointer ${activeTab === "giris"
          ? "bg-indigo-600 text-white"
          : "bg-gray-50 text-gray-600 hover:bg-gray-100"
          }`}
@@ -136,7 +136,7 @@ export default function GirisPage() {
          setError("");
          setSuccess("");
         }}
-        className={`flex-1 py-4 font-bold text-center transition ${activeTab === "kayit"
+        className={`flex-1 py-4 font-bold text-center transition cursor-pointer ${activeTab === "kayit"
          ? "bg-indigo-600 text-white"
          : "bg-gray-50 text-gray-600 hover:bg-gray-100"
          }`}
