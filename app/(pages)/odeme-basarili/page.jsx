@@ -1,0 +1,100 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCart } from "@/context/CartContext";
+import axiosInstance from "@/lib/axios";
+import Link from "next/link";
+import { MdCheckCircle, MdShoppingBag } from "react-icons/md";
+
+export default function OdemeBasariliPage() {
+ const router = useRouter();
+ const searchParams = useSearchParams();
+ const { clearCart } = useCart();
+ const [loading, setLoading] = useState(true);
+ const [orderId, setOrderId] = useState("");
+
+  useEffect(() => {
+  const token = searchParams.get("token");
+  const orderId = searchParams.get("orderId");
+
+  if (!token) {
+   router.push("/odeme");
+   return;
+  }
+
+  // Callback'i backend'e bildir
+  const handleCallback = async () => {
+   try {
+    const res = await axiosInstance.post("/api/payment/iyzico/callback", {
+     token: token,
+     orderId: orderId,
+    });
+
+    const data = res.data || {};
+    if (data.success) {
+     setOrderId(data.orderId || orderId || "");
+     clearCart();
+     setLoading(false);
+    } else {
+     // Ödeme başarısız, başarısız sayfaya yönlendir
+     router.push(`/odeme-basarisiz?orderId=${orderId || ""}&reason=${encodeURIComponent(data.message || "Ödeme işlemi tamamlanamadı")}`);
+    }
+   } catch (error) {
+    console.error("Callback error:", error);
+    router.push(`/odeme-basarisiz?orderId=${orderId || ""}&reason=${encodeURIComponent("Ödeme doğrulama hatası")}`);
+   }
+  };
+
+  handleCallback();
+ }, [searchParams, router, clearCart]);
+
+ if (loading) {
+  return (
+   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="text-center">
+     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+     <p className="text-gray-600">Ödeme işlemi kontrol ediliyor...</p>
+    </div>
+   </div>
+  );
+ }
+
+ return (
+  <div className="min-h-screen bg-gray-50 py-12">
+   <div className="container mx-auto px-4 max-w-2xl">
+    <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+     <div className="mb-6">
+      <MdCheckCircle className="text-green-500 mx-auto" size={80} />
+     </div>
+     <h1 className="text-3xl font-bold text-gray-900 mb-4">Ödeme Başarılı!</h1>
+     <p className="text-gray-600 mb-6">
+      Siparişiniz başarıyla alındı. En kısa sürede hazırlanıp kargoya verilecektir.
+     </p>
+     {orderId && (
+      <div className="bg-gray-50 rounded-lg p-4 mb-6">
+       <p className="text-sm text-gray-600 mb-1">Sipariş Numarası</p>
+       <p className="text-lg font-bold text-indigo-600">{orderId}</p>
+      </div>
+     )}
+     <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      <Link
+       href={`/hesabim?tab=siparisler`}
+       className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition"
+      >
+       <MdShoppingBag size={20} />
+       Siparişlerimi Görüntüle
+      </Link>
+      <Link
+       href="/"
+       className="inline-flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition"
+      >
+       Ana Sayfaya Dön
+      </Link>
+     </div>
+    </div>
+   </div>
+  </div>
+ );
+}
+

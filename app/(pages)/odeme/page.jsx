@@ -182,8 +182,67 @@ export default function OdemePage() {
     setError("Sipariş oluşturulurken bir hata oluştu.");
     setIsSubmitting(false);
    }
+  } else if (paymentMethod.type === "card") {
+   // İyzico ile kart ödemesi
+   try {
+    const selectedAddress = addresses.find((a) => String(a._id) === String(selectedAddressId));
+    const addressSummary = selectedAddress
+     ? `${selectedAddress.title} - ${selectedAddress.fullName}, ${selectedAddress.address}, ${selectedAddress.district}/${selectedAddress.city} (${selectedAddress.phone})`
+     : "";
+    const shippingAddress = selectedAddress
+     ? {
+      title: selectedAddress.title,
+      fullName: selectedAddress.fullName,
+      phone: selectedAddress.phone,
+      address: selectedAddress.address,
+      district: selectedAddress.district,
+      city: selectedAddress.city,
+     }
+     : null;
+
+    const payloadItems = (cart || []).map((i) => {
+     const price =
+      i.discountPrice && i.discountPrice < i.price ? i.discountPrice : i.price;
+     return {
+      productId: String(i._id || i.id),
+      name: i.name,
+      slug: i.slug,
+      image: i?.images?.[0] || i.image || "",
+      price: Number(price || 0),
+      quantity: Number(i.quantity || 1),
+      size: i.selectedSize || "",
+      color: i.selectedColor || "",
+     };
+    });
+
+    // İyzico ödeme başlat
+    const res = await axiosInstance.post("/api/payment/iyzico/init", {
+     items: payloadItems,
+     total: grandTotal,
+     address: {
+      id: selectedAddressId,
+      summary: addressSummary,
+      shippingAddress,
+      billingAddress: shippingAddress,
+     },
+     cardId: paymentMethod.cardId || null,
+    });
+
+    const data = res.data || {};
+    if (!data.success || !data.paymentPageUrl) {
+     setError(data.message || "Ödeme başlatılamadı.");
+     setIsSubmitting(false);
+     return;
+    }
+
+    // İyzico ödeme sayfasına yönlendir
+    window.location.href = data.paymentPageUrl;
+   } catch (e) {
+    setError("Ödeme başlatılırken bir hata oluştu. Lütfen tekrar deneyin.");
+    setIsSubmitting(false);
+   }
   } else {
-   setError("Kart ile ödeme henüz aktif değil. Şimdilik diğer ödeme yöntemlerini kullanın.");
+   setError("Geçersiz ödeme yöntemi.");
    setIsSubmitting(false);
   }
  };

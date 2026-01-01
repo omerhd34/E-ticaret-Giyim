@@ -120,6 +120,15 @@ const UserSchema = new mongoose.Schema({
   type: mongoose.Schema.Types.ObjectId,
   ref: 'Product',
  }],
+ tempOrders: [{
+  orderId: String,
+  userId: String,
+  items: Array,
+  total: Number,
+  address: mongoose.Schema.Types.Mixed,
+  cardId: String,
+  createdAt: Date,
+ }],
  notificationPreferences: {
   emailNotifications: {
    type: Boolean,

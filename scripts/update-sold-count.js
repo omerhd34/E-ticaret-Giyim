@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 
-// .env.local dosyasını oku
 const envPath = path.join(__dirname, '..', '.env.local');
 if (fs.existsSync(envPath)) {
  const envFile = fs.readFileSync(envPath, 'utf8');
@@ -16,7 +15,6 @@ if (fs.existsSync(envPath)) {
  });
 }
 
-// Product modelini doğru şekilde import et
 const ProductSchema = new mongoose.Schema({
  name: String,
  slug: String,
@@ -48,7 +46,6 @@ async function updateSoldCount() {
 
   await mongoose.connect(mongoUri);
 
-  // User modelini import et
   const UserSchema = new mongoose.Schema({
    orders: Array,
   }, { strict: false });

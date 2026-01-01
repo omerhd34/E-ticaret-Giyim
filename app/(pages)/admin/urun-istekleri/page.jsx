@@ -181,7 +181,7 @@ export default function AdminUrunIstekleriPage() {
        <div className="flex flex-wrap gap-3">
         <button
          onClick={() => handleFilterChange("all")}
-         className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${filter === "all"
+         className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 cursor-pointer ${filter === "all"
           ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30"
           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
@@ -190,7 +190,7 @@ export default function AdminUrunIstekleriPage() {
         </button>
         <button
          onClick={() => handleFilterChange("Beklemede")}
-         className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${filter === "Beklemede"
+         className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 cursor-pointer ${filter === "Beklemede"
           ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30"
           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
@@ -199,7 +199,7 @@ export default function AdminUrunIstekleriPage() {
         </button>
         <button
          onClick={() => handleFilterChange("Onaylandı")}
-         className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${filter === "Onaylandı"
+         className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 cursor-pointer ${filter === "Onaylandı"
           ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30"
           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
@@ -208,7 +208,7 @@ export default function AdminUrunIstekleriPage() {
         </button>
         <button
          onClick={() => handleFilterChange("Reddedildi")}
-         className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${filter === "Reddedildi"
+         className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 cursor-pointer ${filter === "Reddedildi"
           ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30"
           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
@@ -217,7 +217,7 @@ export default function AdminUrunIstekleriPage() {
         </button>
         <button
          onClick={() => handleFilterChange("İptal Edildi")}
-         className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${filter === "İptal Edildi"
+         className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 cursor-pointer ${filter === "İptal Edildi"
           ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30"
           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
